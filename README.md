@@ -33,7 +33,7 @@ Każdy uczestnik wybiera swoją rolę w zespole (np. frontend, backend, tester, 
 
 Pojedyńczy projekt składa się z:
 
-- projektu z dynamicznie generowanymi wariantami (np. cyber),
+- projektu z dynamicznie generowanymi motywami (np. cyber, eco),
 - zróżnicowanych typów projektów (strony, aplikacje, gry),
 - etapów (checkpoints), które drużyna musi zaliczyć,
 - zadań końcowych, które wymagają połączenia wcześniej zdobytych umiejętności.
@@ -56,7 +56,7 @@ Projekt zawiera:
  2. **Mechanizm dobierania zespołu** <br>
 Automatyczny matchmaking uczestników do zespołów 3–4 osobowych.
 
-- Po rejestracji/logowaniu użytkownik **wybiera preferowaną rolę** (np. frontend, backend, tester).
+- Po rejestracji/logowaniu użytkownik wybiera preferowaną rolę (np. frontend, backend, tester).
 - System analizuje dostępnych użytkowników, ich **historię projektów** i **wybrane role**, by stworzyć **zbalansowany zespół**:
   - unika powtarzających się zespołów,
   - paruje osoby z różnym doświadczeniem (jeśli to możliwe),
@@ -68,9 +68,9 @@ Zadania generowane automatycznie na podstawie szablonów. <br>
 Stworzenie przynajmniej 2 szablonów. <br>
 
 - System losuje:
-  - **typ projektu** (np. gra 2D, aplikacja webowa, narzędzie CLI),
-  - **motyw** (np. “hakerzy”, “ekologia”, “nauka przez zabawę”),
-  - **ograniczenia techniczne** (np. “brak frameworka”, “dark mode only”, “limit API calls”).
+  - typ projektu (np. gra 2D, aplikacja webowa, narzędzie CLI),
+  - motyw (np. “hakerzy”, “ekologia”, “nauka przez zabawę”),
+  - ograniczenia techniczne (np. “brak frameworka”, “dark mode only”, “limit API calls”).
 - Dla każdego projektu tworzony jest **pakiet startowy**:
   - krótki opis zadania,
   - role i odpowiedzialności,
@@ -81,7 +81,7 @@ Automatyczne tworzenie repozytoriów GitHub z wstępnym kodem i testami (z użyc
 - Po stworzeniu zespołu i przypisaniu zadania, system:
   - tworzy **nowe repozytorium zespołu** (prywatne/publiczne),
   - dodaje członków zespołu jako kolaboratorów,
-  - wrzuca **starter-kit** (README, struktura projektu, testy, CI/CD).
+  - wrzuca starter-kit (README, struktura projektu, testy, CI/CD).
 - Repozytorium zawiera linki do: instrukcji, checklisty i statusu zadania.
 
 5. **Automatyczne testowanie (CI/CD)** <br>
@@ -90,7 +90,7 @@ Sprawdzenie projektu bez udziału mentora.<br>
 - Każde zadanie będzie miało przypisane **testy jednostkowe i integracyjne**, które uruchamiają się:
   - przy każdym `pushu` do repozytorium,
   - lub na żądanie (np. z poziomu platformy).
-- Wdrożenie przy pomocy **GitHub Actions**:
+- Wdrożenie przy pomocy GitHub Actions:
   - budowanie projektu,
   - uruchamianie testów,
 
