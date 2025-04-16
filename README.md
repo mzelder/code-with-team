@@ -21,7 +21,7 @@ Platforma jest przeznaczona dla:
 
 ## Efekt końcowy
 
-Uczestnicy kursu zbudują swoje doświadczenie poprzez udział w kilkuetapowych projektach, które zakończą się:
+Uczestnicy platformy zbudują swoje doświadczenie poprzez udział w kilkuetapowych projektach, które zakończą się:
 
 - stworzeniem kompletnej/ych aplikacji zespołowej/ych (gra, aplikacja desktopowa lub webowa),
 - uzyskaniem certyfikatu ukończenia kursu (po zrealizowaniu kilku projektów),
@@ -47,28 +47,52 @@ Projekt zawiera:
 ## MVP – Minimum Viable Product
 
 ### Kluczowe funkcjonalności
-
-1. **System logowania/rejestracji użytkowników**
+ 1. **System logowania/rejestracji użytkowników**
    - Możliwość stworzenia konta
    - Możliwość logowania
    - Odzyskiwanie hasła
+   - Zarzadzanie profilem - edycja danych użytkownika, zmiana hasła
 
-2. **Mechanizm dobierania zespołu**
-   - Wybranie pożądanej roli
-   - System doboru graczy zważając na ich "rozegrane" projekty oraz wybrane role
-   - 
+ 2. **Mechanizm dobierania zespołu** <br>
+Automatyczny matchmaking uczestników do zespołów 3–4 osobowych.
 
-3. **Generator zadań zespołowych**
-   - Dynamiczne zadania oparte na szablonach z losowaniem motywu, technologii i ograniczeń.
+- Po rejestracji/logowaniu użytkownik **wybiera preferowaną rolę** (np. frontend, backend, tester).
+- System analizuje dostępnych użytkowników, ich **historię projektów** i **wybrane role**, by stworzyć **zbalansowany zespół**:
+  - unika powtarzających się zespołów,
+  - paruje osoby z różnym doświadczeniem (jeśli to możliwe),
+  - stara się dopasować kompletne zespoły pod konkretne zadania.
+- Przypisanie użytkownika do zespołu i **stworzenie “pokoju projektowego”**, widocznego w panelu.
 
-4. **Repozytoria zespołowe**
-   - Automatyczne tworzenie repozytoriów GitHub z wstępnym kodem i testami (z użyciem GitHub API).
+3. **Generator zadań zespołowych** <br>
+Zadania generowane automatycznie na podstawie szablonów. <br>
+Stworzenie przynajmniej 2 szablonów. <br>
 
-5. **Panel użytkownika**
-   - Dostęp do bieżącego projektu, instrukcji, statusu zespołu i checklisty.
+- System losuje:
+  - **typ projektu** (np. gra 2D, aplikacja webowa, narzędzie CLI),
+  - **motyw** (np. “hakerzy”, “ekologia”, “nauka przez zabawę”),
+  - **ograniczenia techniczne** (np. “brak frameworka”, “dark mode only”, “limit API calls”).
+- Dla każdego projektu tworzony jest **pakiet startowy**:
+  - krótki opis zadania,
+  - role i odpowiedzialności,
+  - checklisty do realizacji.
 
-6. **Automatyczne testowanie**
-   - Integracja z CI/CD (np. GitHub Actions) – uruchamianie testów po pushu.
+4. **Repozytoria zespołowe** <br>
+Automatyczne tworzenie repozytoriów GitHub z wstępnym kodem i testami (z użyciem GitHub API).
+- Po stworzeniu zespołu i przypisaniu zadania, system:
+  - tworzy **nowe repozytorium zespołu** (prywatne/publiczne),
+  - dodaje członków zespołu jako kolaboratorów,
+  - wrzuca **starter-kit** (README, struktura projektu, testy, CI/CD).
+- Repozytorium zawiera linki do: instrukcji, checklisty i statusu zadania.
+
+5. **Automatyczne testowanie (CI/CD)** <br>
+Sprawdzenie projektu bez udziału mentora.<br>
+
+- Każde zadanie będzie miało przypisane **testy jednostkowe i integracyjne**, które uruchamiają się:
+  - przy każdym `pushu` do repozytorium,
+  - lub na żądanie (np. z poziomu platformy).
+- Wdrożenie przy pomocy **GitHub Actions**:
+  - budowanie projektu,
+  - uruchamianie testów,
 
 ### Stack technologiczny (propozycja MVP)
 
