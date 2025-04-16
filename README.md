@@ -29,7 +29,7 @@ Uczestnicy platformy zbudują swoje doświadczenie poprzez udział w kilkuetapow
 
 ## Workflow platformy
 
-Każdy uczestnik wybiera swoją **rolę w zespole** (np. frontend, backend, tester, dokumentalista, project manager), po czym system automatycznie tworzy zespół z innych uczestników.
+Każdy uczestnik wybiera swoją rolę w zespole (np. frontend, backend, tester, dokumentalista, project manager), po czym system automatycznie tworzy zespół z innych uczestników.
 
 Pojedyńczy projekt składa się z:
 
