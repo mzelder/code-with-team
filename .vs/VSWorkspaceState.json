@@ -1,8 +1,10 @@
 {
   "ExpandedNodes": [
     "",
-    "\\server"
+    "\\client",
+    "\\server",
+    "\\server\\CodeWithTeam.Api"
   ],
-  "SelectedNode": "\\package-lock.json",
+  "SelectedNode": "\\server\\CodeWithTeam.Api\\CodeWithTeam.Api.sln",
   "PreviewInSolutionExplorer": false
 }
