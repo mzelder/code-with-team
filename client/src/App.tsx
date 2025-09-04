@@ -1,12 +1,38 @@
+import { Route, Routes, Link } from 'react-router-dom'
+import LoginForm from './components/LoginForm'
+import RegistrationForm from './components/RegistrationForm'
 import './App.css'
 
 function App() {
   return (
-    <>
-      <h1 className="3x1 font-bold underline">
-        HelloWorld!
-      </h1>
-    </>
+    <Routes>
+        <Route
+        path="/"
+        element={
+          <div className="flex flex-col items-center justify-center min-h-screen gap-4 bg-gray-900 text-white">
+            <h1 className="text-3xl font-bold">Hello world</h1>
+            <div className="flex gap-4 mt-6">
+              <Link
+                to="/signin"
+                className="px-4 py-2 rounded-md bg-indigo-500 hover:bg-indigo-400 font-semibold"
+              >
+                Sign in
+              </Link>
+              <Link
+                to="/signup"
+                className="px-4 py-2 rounded-md bg-green-500 hover:bg-green-400 font-semibold"
+              >
+                Sign up
+              </Link>
+            </div>
+          </div>
+        }
+      />
+        
+        
+        <Route path="/signin" element={<LoginForm />} />
+        <Route path="/signup" element={<RegistrationForm />} />
+    </Routes>
   )
 }
 
