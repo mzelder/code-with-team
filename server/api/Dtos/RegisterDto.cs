@@ -12,7 +12,7 @@ namespace api.Dtos
         public string Password { get; set; }
 
         [Required]
-        [Compare("Password", ErrorMessage = "Password do not match")]
         public string ConfirmPassword { get; set; }
     }
 }
+ 

@@ -4,6 +4,7 @@ using api.Controllers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Internal;
+using api.Dtos;
 
 namespace api.Tests
 {
@@ -12,7 +13,7 @@ namespace api.Tests
         private AppDbContext GetDbContext()
         {
             var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase(databaseName: "TestDb")
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
 
             var context = new AppDbContext(options);
@@ -26,9 +27,9 @@ namespace api.Tests
         {
             var context = GetDbContext();
             var controller = new AuthController(context);
-            var user = new User { Username = "testuser", Password = "1234" };
+            var dto = new LoginDto { Username = "testuser", Password = "1234" };
 
-            var result = await controller.Login(user);
+            var result = await controller.Login(dto);
 
             Assert.IsType<OkObjectResult>(result);
         }
@@ -38,9 +39,9 @@ namespace api.Tests
         {
             var context = GetDbContext();
             var controller = new AuthController(context);
-            var user = new User { Username = "testuser", Password = "wrongpass" };
+            var dto = new LoginDto { Username = "testuser", Password = "wrongpass" };
 
-            var result = await controller.Login(user);
+            var result = await controller.Login(dto);
 
             Assert.IsType<UnauthorizedObjectResult>(result);
         }
@@ -50,23 +51,49 @@ namespace api.Tests
         {
             var context = GetDbContext();
             var controller = new AuthController(context);
-            var user = new User { Username = "newuser", Password = "1234" };
+            var dto = new RegisterDto { Username = "newuser", Password = "1234", ConfirmPassword = "1234" };
 
-            var result = await controller.Register(user);
+            var result = await controller.Register(dto);
 
             Assert.IsType<OkObjectResult>(result);
         }
-        
+
         [Fact]
         public async Task Register_UserExistInDb_ReturnsBadRequest()
         {
             var context = GetDbContext();
             var controller = new AuthController(context);
-            var user = new User { Username = "testuser", Password = "1234" };
+            var dto = new RegisterDto { Username = "testuser", Password = "1234", ConfirmPassword = "1234" };
 
-            var result = await controller.Register(user);
+            var result = await controller.Register(dto);
 
             Assert.IsType<BadRequestObjectResult>(result);
+        }
+
+        [Fact]
+        public async Task Register_PasswordsNotEqual_ReturnsBadRequest()
+        {
+            var context = GetDbContext();
+            var controller = new AuthController(context);
+            var dto = new RegisterDto { Username = "newuser", Password = "goodpass", ConfirmPassword = "badpass" };
+
+
+            var result = await controller.Register(dto);
+
+            Assert.IsType<BadRequestObjectResult>(result);
+        }
+        
+        [Fact]
+        public async Task Register_PasswordsEqual_ReturnsOk()
+        {
+            var context = GetDbContext();
+            var controller = new AuthController(context);
+            var dto = new RegisterDto { Username = "newuser", Password = "goodpass", ConfirmPassword = "goodpass" };
+
+
+            var result = await controller.Register(dto);
+
+            Assert.IsType<OkObjectResult>(result);
         }
 
     }

@@ -20,15 +20,14 @@ namespace api.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
-            // Compare passwords
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             if (await _context.Users.AnyAsync(u => u.Username == dto.Username))
             {
                 return BadRequest("Username already exists");
+            }
+
+            if (dto.Password != dto.ConfirmPassword)
+            {
+                return BadRequest("Password do not match");
             }
 
             var user = new User
