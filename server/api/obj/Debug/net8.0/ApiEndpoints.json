@@ -8,8 +8,8 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "user",
-        "Type": "api.Models.User",
+        "Name": "dto",
+        "Type": "api.Models.LoginDto",
         "IsRequired": true
       }
     ],
@@ -24,8 +24,8 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "user",
-        "Type": "api.Models.User",
+        "Name": "dto",
+        "Type": "api.Dtos.RegisterDto",
         "IsRequired": true
       }
     ],

@@ -1,12 +1,22 @@
-
+import { useState } from "react";
+import { apiPost } from "../apiClient/apiClient"
+import { loginUser } from "../apiClient/auth";
 
 function LoginForm() {
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        loginUser({username, password});
+    }
+    
     return (
     <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
         <img
           src="/cwt_logo.svg"
-          alt="Your Company"
+          alt="Code with team logo"
           className="mx-auto h-40 w-auto"
         />
         <h2 className="text-center text-2xl/9 font-bold tracking-tight text-white">
@@ -15,7 +25,7 @@ function LoginForm() {
       </div>
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form action="#" method="POST" className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="email" className="block text-sm/6 font-medium text-gray-100">
               Username
@@ -25,6 +35,8 @@ function LoginForm() {
                 id="username"
                 type="text"
                 name="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 placeholder="Enter you username"
                 required
                 autoComplete="username"
@@ -49,6 +61,8 @@ function LoginForm() {
                 id="password"
                 type="password"
                 name="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter you username"
                 required
                 autoComplete="current-password"
