@@ -58,7 +58,7 @@ namespace api.Tests
         }
         
         [Fact]
-        public async Task Register_UserExistInDb_ReturnsOk()
+        public async Task Register_UserExistInDb_ReturnsBadRequest()
         {
             var context = GetDbContext();
             var controller = new AuthController(context);

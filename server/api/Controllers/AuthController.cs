@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using api.Data;
 using api.Models;
+using api.Dtos;
 
 namespace api.Controllers
 {
@@ -17,12 +18,24 @@ namespace api.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] User user)
+        public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
-            if (await _context.Users.AnyAsync(u => u.Username == user.Username))
+            // Compare passwords
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (await _context.Users.AnyAsync(u => u.Username == dto.Username))
             {
                 return BadRequest("Username already exists");
             }
+
+            var user = new User
+            {
+                Username = dto.Username,
+                Password = dto.Password
+            };
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
@@ -31,17 +44,17 @@ namespace api.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] User user)
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
             var existingUser = await _context.Users.
-                FirstOrDefaultAsync(u => u.Username == user.Username);
+                FirstOrDefaultAsync(u => u.Username == dto.Username);
 
             if (existingUser == null)
             {
                 return Unauthorized("Invalid username or password");
             }
 
-            if (existingUser.Password != user.Password)
+            if (existingUser.Password != dto.Password)
             {
                 return Unauthorized("Invalid username or password");
             }
