@@ -8,3 +8,11 @@ export interface RegisterDto {
     password: string;
     confirmPassword: string;
 }
+
+export interface LoginResponseDto {
+    message: string;
+}
+
+export interface RegisterResponseDto {
+    message: string;
+}
