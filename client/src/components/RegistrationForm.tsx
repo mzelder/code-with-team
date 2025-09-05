@@ -1,6 +1,16 @@
-
+import { useState } from "react";
+import { registerUser } from "../apiClient/auth";
 
 function RegistrationForm() {
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        await registerUser({username, password, confirmPassword});
+    }
+    
     return (
     <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
@@ -15,7 +25,7 @@ function RegistrationForm() {
       </div>
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form action="#" method="POST" className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="username" className="block text-sm/6 font-medium text-gray-100">
               Username
@@ -25,6 +35,8 @@ function RegistrationForm() {
                 id="username"
                 type="text"
                 name="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 placeholder="Enter your username"
                 required
                 autoComplete="username"
@@ -44,6 +56,8 @@ function RegistrationForm() {
                 id="password"
                 type="password"
                 name="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 required
                 autoComplete="current-password"
@@ -63,6 +77,8 @@ function RegistrationForm() {
                 id="retyped-password"
                 type="password"
                 name="retyped-password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Enter your password again"
                 required
                 autoComplete="retyped-password"
