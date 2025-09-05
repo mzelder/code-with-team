@@ -3,6 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using api.Data;
 using api.Models;
 using api.Dtos;
+using System.Security.Claims;
+using Microsoft.Identity.Client;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 
 namespace api.Controllers
 {
@@ -58,8 +62,25 @@ namespace api.Controllers
                 return Unauthorized("Invalid username or password");
             }
 
+            var claims = new List<Claim> { new Claim(ClaimTypes.Name, existingUser.Username) };
+            var identity = new ClaimsIdentity(claims, "Cookies");
+            await HttpContext.SignInAsync("Cookies", new ClaimsPrincipal(identity));
+
             return Ok("Login successful");
         }
-    }
 
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync();
+            return Ok("Logged out");
+        }
+
+        [HttpGet("me")]
+        [Authorize]
+        public IActionResult Me()
+        {
+            return Ok(new { User = User.Identity?.Name });
+        }
+    }
 }

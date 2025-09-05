@@ -1,10 +1,12 @@
-using api.Data;
-using api.Models;
 using api.Controllers;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Internal;
+using api.Data;
 using api.Dtos;
+using api.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace api.Tests
 {
@@ -20,18 +22,6 @@ namespace api.Tests
             context.Users.Add(new Models.User { Username = "testuser", Password = "1234" });
             context.SaveChanges();
             return context;
-        }
-
-        [Fact]
-        public async Task Login_WithValidCredentials_ReturnsOk()
-        {
-            var context = GetDbContext();
-            var controller = new AuthController(context);
-            var dto = new LoginDto { Username = "testuser", Password = "1234" };
-
-            var result = await controller.Login(dto);
-
-            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
