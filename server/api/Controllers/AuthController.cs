@@ -26,12 +26,12 @@ namespace api.Controllers
         {
             if (await _context.Users.AnyAsync(u => u.Username == dto.Username))
             {
-                return BadRequest("Username already exists");
+                return BadRequest(new { message = "Username already exists." });
             }
 
             if (dto.Password != dto.ConfirmPassword)
             {
-                return BadRequest("Password do not match");
+                return BadRequest(new { message = "Passwords do not match."});
             }
 
             var user = new User
@@ -43,7 +43,7 @@ namespace api.Controllers
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return Ok("User registred");
+            return Ok(new { message ="User registered.", success = true});
         }
 
         [HttpPost("login")]
@@ -54,19 +54,19 @@ namespace api.Controllers
 
             if (existingUser == null)
             {
-                return Unauthorized("Invalid username or password");
+                return Unauthorized(new { message = "Invalid username or password"});
             }
 
             if (existingUser.Password != dto.Password)
             {
-                return Unauthorized("Invalid username or password");
+                return Unauthorized(new { message = "Invalid username or password" });
             }
 
             var claims = new List<Claim> { new Claim(ClaimTypes.Name, existingUser.Username) };
             var identity = new ClaimsIdentity(claims, "Cookies");
             await HttpContext.SignInAsync("Cookies", new ClaimsPrincipal(identity));
 
-            return Ok("Login successful");
+            return Ok(new { message = "Login successful", success = true });
         }
 
         [HttpPost("logout")]
@@ -76,11 +76,14 @@ namespace api.Controllers
             return Ok("Logged out");
         }
 
-        [HttpGet("me")]
+        [HttpGet("check")]
         [Authorize]
-        public IActionResult Me()
+        public IActionResult CheckAuth()
         {
-            return Ok(new { User = User.Identity?.Name });
+            return Ok(new {
+                IsAuthenticated = true,
+                User = User.Identity?.Name
+            });
         }
     }
 }
