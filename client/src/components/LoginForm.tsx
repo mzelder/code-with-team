@@ -1,15 +1,29 @@
 import { useState } from "react";
 import { loginUser } from "../apiClient/auth";
+import { useNavigate } from "react-router-dom";
+import toast from 'react-hot-toast'
 
 function LoginForm() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const navigate = useNavigate();
     
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        loginUser({username, password});
-    }
-    
+        
+        try {
+            const result = await loginUser({username, password});   
+            const isSuccess = result?.success;
+            
+            if (isSuccess) {
+                navigate("/dashboard", { replace: true });
+                toast.success("Login successful!");
+            }
+        } catch (e) {
+            toast.error("Invalid username or password.");
+    };
+}
+
     return (
     <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">

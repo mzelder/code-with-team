@@ -3,7 +3,7 @@ import { apiGet } from '../apiClient/apiClient';
 import { useState, useEffect } from 'react';
 
  const ProtectedRoutes = () => {
-    const [isAuthenticated, setIsAuthenticated] = useState(null);
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
     
     useEffect(() => {
         const checkAuth = async () => {
