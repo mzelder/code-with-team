@@ -16,4 +16,5 @@ export interface LoginResponseDto {
 
 export interface RegisterResponseDto {
     message: string;
+    success: boolean;
 }

@@ -1,16 +1,30 @@
 import { useState } from "react";
 import { registerUser } from "../apiClient/auth";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 function RegistrationForm() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const navigate = useNavigate();
     
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        await registerUser({username, password, confirmPassword});
+         try {
+            const result = await registerUser({username, password, confirmPassword});   
+            const isSuccess = result?.success;
+            
+            if (isSuccess) {
+                navigate("/signin", { replace: true });
+                toast.success("Registration successful! You can Sign In now.");
+            }
+        } catch (error: any) {
+            const errorMessage = error?.message;
+            toast.error(errorMessage);
+        }
     }
-    
+
     return (
     <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
