@@ -1,6 +1,6 @@
 import { Route, Routes, Link } from 'react-router-dom'
-import LoginForm from './components/LoginForm'
-import RegistrationForm from './components/RegistrationForm'
+import { LoginForm, RegistrationForm, SideMenu} from './components'
+import ProtectedRoutes from './utils/ProtectedRoutes'
 import './App.css'
 
 function App() {
@@ -32,6 +32,10 @@ function App() {
         
         <Route path="/signin" element={<LoginForm />} />
         <Route path="/signup" element={<RegistrationForm />} />
+        
+        <Route element={<ProtectedRoutes />}>
+            <Route path="/dashboard" element={<SideMenu />} />
+        </Route>
     </Routes>
   )
 }
