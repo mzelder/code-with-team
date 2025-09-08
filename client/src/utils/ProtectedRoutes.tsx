@@ -1,5 +1,5 @@
 import { Outlet, Navigate } from 'react-router-dom';
-import { apiGet } from '../apiClient/apiClient';
+import { validateCookies } from '../apiClient/auth';
 import { useState, useEffect } from 'react';
 
  const ProtectedRoutes = () => {
@@ -8,8 +8,8 @@ import { useState, useEffect } from 'react';
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const data = await apiGet("/api/Auth/check");
-                setIsAuthenticated(data?.isAuthenticated || false);
+                const result = await validateCookies();
+                setIsAuthenticated(result?.isAuthenticated || false);
             } catch (error) {
                 setIsAuthenticated(false);
             }
@@ -19,7 +19,7 @@ import { useState, useEffect } from 'react';
     }, []);
 
     if (isAuthenticated === null) {
-        return <div>Loading...</div>;
+        return <div className="text-white">Loading...</div>;
     }
 
     return isAuthenticated ? <Outlet /> : <Navigate to="/signin" />

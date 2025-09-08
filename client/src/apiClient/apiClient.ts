@@ -1,10 +1,10 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export async function apiPost(endpoit: string, data: any) {
+export async function apiPost(endpoit: string, data?: any) {
     const response = await fetch(`${API_BASE_URL}${endpoit}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: data ? JSON.stringify(data) : undefined,
         credentials: "include"
     });
 

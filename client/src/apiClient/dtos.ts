@@ -18,3 +18,13 @@ export interface RegisterResponseDto {
     message: string;
     success: boolean;
 }
+
+export interface LogoutResponseDto {
+    message: string;
+    success: boolean;
+}
+
+export interface ValidateCookiesResponseDto {
+    isAuthenticated: boolean;
+    user: string;
+}

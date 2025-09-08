@@ -73,7 +73,7 @@ namespace api.Controllers
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync();
-            return Ok("Logged out");
+            return Ok(new { message = "Logged out", success = true });
         }
 
         [HttpGet("check")]
