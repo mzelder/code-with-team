@@ -1,6 +1,6 @@
 import { Route, Routes, Link } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
-import { LoginForm, RegistrationForm, SideMenu} from './components'
+import { LoginPage, RegisterPage, DashboardPage} from './pages'
 import ProtectedRoutes from './utils/ProtectedRoutes'
 import './App.css'
 
@@ -13,7 +13,6 @@ function App() {
             path="/"
             element={
             <div className="flex flex-col items-center justify-center min-h-screen gap-4 bg-gray-900 text-white">
-                <h1 className="text-3xl font-bold">Hello world</h1>
                 <div className="flex gap-4 mt-6">
                 <Link
                     to="/signin"
@@ -33,11 +32,11 @@ function App() {
         />
             
             
-            <Route path="/signin" element={<LoginForm />} />
-            <Route path="/signup" element={<RegistrationForm />} />
+            <Route path="/signin" element={<LoginPage />} />
+            <Route path="/signup" element={<RegisterPage />} />
             
             <Route element={<ProtectedRoutes />}>
-                <Route path="/dashboard" element={<SideMenu />} />
+                <Route path="/dashboard" element={<DashboardPage />} />
             </Route>
         </Routes>
     </div>

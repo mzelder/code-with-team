@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { registerUser } from "../apiClient/auth";
+import { registerUser } from "../../apiClient/auth";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 

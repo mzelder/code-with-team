@@ -1,6 +1,4 @@
-import React from 'react';
-import { apiPost } from '../apiClient/apiClient';
-import { logoutUser } from '../apiClient/auth';
+import { logoutUser } from '../../apiClient/auth';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
