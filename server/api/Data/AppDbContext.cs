@@ -1,5 +1,4 @@
 using api.Models;
-using api.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Data
@@ -16,12 +15,13 @@ namespace api.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Role>().HasData(
-                new Role { Id = 1, Name = "Frontend", Category = "Web Dev" },
-                new Role { Id = 2, Name = "Backend", Category = "Web Dev" },
-                new Role { Id = 3, Name = "QA", Category = "Web Dev" },
-                new Role { Id = 4, Name = "PM", Category = "Web Dev" }
-            );
+            modelBuilder.Entity<User>()
+                .Property(u => u.CreatedAt)
+                .HasDefaultValueSql("GETDATE()");
+
+            modelBuilder.Entity<LobbyQueue>()
+                .Property(u => u.JoinedAt)
+                .HasDefaultValueSql("GETDATE()");
         }
     }
 }

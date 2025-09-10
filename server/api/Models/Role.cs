@@ -4,12 +4,11 @@ namespace api.Models
 {
     public class Role
     {
-       public int Id { get; set; }
-
-        [Required]
+        public int Id { get; set; }
         public string Name { get; set; }
-
-        [Required]
-        public string Category{ get; set; }
+        public int CategoryId { get; set; }
+        public Category Category { get; set; }
+        public ICollection<ProgrammingLanguage> ProgrammingLanguages { get; set; }
+        public ICollection<UserSelection> UserSelections { get; set; }
     }
 }
