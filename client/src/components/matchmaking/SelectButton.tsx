@@ -7,6 +7,8 @@ interface SelectButtonProps {
     defaultBorderColor?: string;
     selectedColor?: string;
     text: string; 
+    isSelected: boolean,
+    onToggle: () => void;
 }
 
 const SelectButton: React.FC<SelectButtonProps> = ({
@@ -15,18 +17,18 @@ const SelectButton: React.FC<SelectButtonProps> = ({
     defaultBorderColor = "black",
     selectedColor = "#00D1FF",
     text,
+    isSelected,
+    onToggle,
 }) => {
-    const [isSelected, setIsSelected] = useState(true);
-
     return (
         <button
             className="rounded border-solid border-1 w-full h-10"
             style={{
                 backgroundColor: defaultBgColor,
-                color: isSelected ? defaultTextColor : selectedColor,
-                borderColor: isSelected ? defaultBorderColor : selectedColor
+                color: isSelected ? selectedColor : defaultTextColor,
+                borderColor: isSelected ? selectedColor : defaultBorderColor
             }}
-            onClick={() => setIsSelected(!isSelected)}
+            onClick={onToggle}
         >
             {text}
         </button>
