@@ -11,6 +11,12 @@ namespace api.Data
 
         public DbSet<Role> Roles { get; set; }
 
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<UserLanguage> UserLanguages { get; set; }
+        public DbSet<UserSelection> UserSelections { get; set; }
+        public DbSet<ProgrammingLanguage> ProgrammingLanguages { get; set; }
+        public DbSet<LobbyQueue> LobbyQueues { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
