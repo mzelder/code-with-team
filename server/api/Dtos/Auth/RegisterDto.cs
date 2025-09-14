@@ -1,14 +1,18 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace api.Models
+namespace api.Dtos.Auth
 {
-    public class LoginDto
+    public class RegisterDto
     {
         [Required]
         public string Username { get; set; }
 
         [Required]
         public string Password { get; set; }
+
+        [Required]
+        public string ConfirmPassword { get; set; }
     }
 }
+ 

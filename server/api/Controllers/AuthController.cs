@@ -2,11 +2,11 @@
 using Microsoft.EntityFrameworkCore;
 using api.Data;
 using api.Models;
-using api.Dtos;
 using System.Security.Claims;
 using Microsoft.Identity.Client;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using api.Dtos.Auth;
 
 namespace api.Controllers
 {

@@ -16,6 +16,6 @@ namespace api.Models
         public DateTime CreatedAt { get; set; }
 
         public ICollection<UserSelection> UserSelections { get; set; }
-        public ICollection<LobbyQueue> LobbbyQueue { get; set; }
+        public ICollection<LobbyQueue> LobbbyQueues { get; set; }
     }
 }
