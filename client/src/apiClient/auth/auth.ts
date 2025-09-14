@@ -1,5 +1,5 @@
 import type { LoginDto, RegisterDto, LoginResponseDto, RegisterResponseDto, LogoutResponseDto, ValidateCookiesResponseDto } from "./dtos";
-import { apiPost, apiGet } from "./apiClient";
+import { apiPost, apiGet } from "../apiClient";
 
 export async function loginUser(data: LoginDto): Promise<LoginResponseDto> {
     return apiPost("/api/Auth/login", data);

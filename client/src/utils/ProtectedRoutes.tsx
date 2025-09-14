@@ -1,5 +1,5 @@
 import { Outlet, Navigate } from 'react-router-dom';
-import { validateCookies } from '../apiClient/auth';
+import { validateCookies } from '../apiClient/auth/auth';
 import { useState, useEffect } from 'react';
 
  const ProtectedRoutes = () => {

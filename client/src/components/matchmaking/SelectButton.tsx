@@ -1,5 +1,4 @@
 import type React from "react";
-import { useState } from "react";
 
 interface SelectButtonProps {
     defaultBgColor?: string;

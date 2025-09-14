@@ -1,4 +1,4 @@
-import { logoutUser } from '../../apiClient/auth';
+import { logoutUser } from '../../apiClient/auth/auth';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
