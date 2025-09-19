@@ -1,22 +1,33 @@
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 import SelectButton from "./SelectButton";
-import type { MetadataDto } from "../../apiClient/matchmaking/dtos";
-import { getMetadata } from "../../apiClient/matchmaking/matchmaking";
+import type { MetadataResponseDto } from "../../apiClient/matchmaking/dtos";
+import { getMetadata, saveMetadata } from "../../apiClient/matchmaking/matchmaking";
 import toast from "react-hot-toast";
 
 function FindTeamForm() {
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
     const [selectedRole, setSelectedRole] = useState<number | null>(null);
-    const [selectedTool, setSelectedTool] = useState<number[]>([]);
-    const [metadata, setMetadata] = useState<MetadataDto | null>(null);
+    const [selectedTool, setSelectedTool] = useState<number[] | null>(null);
+    const [metadata, setMetadata] = useState<MetadataResponseDto | null>(null);
 
     const handleToggleCategory = (value: number) => setSelectedCategory(value);
     const handleToggleRole = (value: number) => setSelectedRole(value);
     const handleToggleTool = (value: number) => {
         setSelectedTool((prev) => 
-            prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+            prev === null ? [value] : prev.filter((v) => v !== value)
         );
+    };
+    const handleStart = (
+        selectedCategory: number,
+        selectedRole: number,
+        selectedLanguages: number[]
+    ) => {
+        saveMetadata({
+            categoryId: selectedCategory,
+            roleId: selectedRole,
+            programmingLanguageIds: selectedLanguages
+        });
     };
 
     const filteredRoles = metadata?.roles.filter(role => { 
@@ -52,7 +63,7 @@ function FindTeamForm() {
                             key={category.id}
                             text={category.name}
                             isSelected={selectedCategory === category.id}
-                            onToggle={() => handleToggleCategory(category.id)}
+                            onToggle={() => {handleToggleCategory(category.id)}}
                         />
                     ))}
                </div>
@@ -68,7 +79,10 @@ function FindTeamForm() {
                             key={role.id}
                             text={role.name}
                             isSelected={selectedRole === role.id}
-                            onToggle={() => handleToggleRole(role.id)}
+                            onToggle={() => {
+                                handleToggleRole(role.id);
+                                setSelectedTool(null);
+                            }}
                         />
                     ))}
                </div>
@@ -83,7 +97,7 @@ function FindTeamForm() {
                         <SelectButton
                             key={tool.id}
                             text={tool.name}
-                            isSelected={selectedTool.includes(tool.id)}
+                            isSelected={selectedTool?.includes(tool.id) ?? false}
                             onToggle={() => handleToggleTool(tool.id)}
                         />
                     ))}
@@ -93,7 +107,13 @@ function FindTeamForm() {
                 <img src="/arrow.svg" alt="Arrow Icon" />
             </div>
             <div className="flex w-auto min-w-[15vw] h-auto justify-center items-center bg-white px-5">
-                <h1 className="text-3xl text-[#00D1FF] font-[Oswald] font-bold">START</h1>
+                <button 
+                    style={{cursor: "pointer"}} 
+                    disabled={!(selectedCategory && selectedRole && selectedTool?.length)}
+                    onClick={() => handleStart(selectedCategory!, selectedRole!, selectedTool!)}
+                >
+                    <h1 className="text-3xl text-[#00D1FF] font-[Oswald] font-bold">START</h1>
+                </button>
             </div>
         </div>
     );

@@ -1,22 +1,28 @@
-export interface CategoryDto {
+export interface CategoryResponseDto {
     id: number;
     name: string;
 }
 
-export interface RoleDto {
+export interface RoleResponseDto {
     id: number,
     name: string,
     categoryId: number
 }
 
-export interface ProgrammingLanguagesDto { 
+export interface ProgrammingLanguagesResponseDto { 
     id: number,
     name: string,
     RoleId: number
 }
 
-export interface MetadataDto {
-    categories: CategoryDto[];
-    roles: RoleDto[];
-    programmingLanguages: ProgrammingLanguagesDto[];
+export interface MetadataResponseDto {
+    categories: CategoryResponseDto[];
+    roles: RoleResponseDto[];
+    programmingLanguages: ProgrammingLanguagesResponseDto[];
+}
+
+export interface MetadataRequestDto {
+    categoryId: number;
+    roleId: number,
+    programmingLanguageIds: number[];
 }

@@ -23,6 +23,7 @@ const SelectButton: React.FC<SelectButtonProps> = ({
         <button
             className="rounded border-solid border-1 w-full h-10"
             style={{
+                cursor: "pointer",
                 backgroundColor: defaultBgColor,
                 color: isSelected ? selectedColor : defaultTextColor,
                 borderColor: isSelected ? selectedColor : defaultBorderColor
