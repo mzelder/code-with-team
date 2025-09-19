@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import clsx from "clsx";
 import SelectButton from "./SelectButton";
 import type { MetadataDto } from "../../apiClient/matchmaking/dtos";
 import { getMetadata } from "../../apiClient/matchmaking/matchmaking";
@@ -59,7 +60,7 @@ function FindTeamForm() {
             <div className="flex justify-center items-center w-auto h-auto bg-[#00D1FF] border-solid border-x-10 border-white">
                 <img src="/arrow.svg" alt="Arrow Icon" />
             </div>
-            <div className="h-auto w-auto min-w-[15vw] p-5 bg-[#1F2937] justify-center items-center border-solid border-5 border-[#374151]">
+            <div className={clsx(selectedCategory ? "blur-none" : "blur-[2px]", "h-auto w-auto min-w-[15vw] p-5 bg-[#1F2937] justify-center items-center border-solid border-5 border-[#374151]")}>
                <h1 className="text-white text-xl font-[Oswald]">Now, define your role</h1> 
                <div className="flex flex-col h-auto space-y-3 justify-center py-5">
                     {filteredRoles?.map(role => (
@@ -75,7 +76,7 @@ function FindTeamForm() {
             <div className="flex justify-center items-center w-auto h-auto bg-[#00D1FF] border-solid border-x-10 border-white">
                 <img src="/arrow.svg" alt="Arrow Icon" />
             </div>
-            <div className="h-auto w-auto min-w-[15vw] p-5 bg-[#1F2937] justify-center items-center border-solid border-5 border-[#374151]">
+            <div className={clsx(selectedRole ? "blur-none" : "blur-[2px]", "h-auto w-auto min-w-[15vw] p-5 bg-[#1F2937] justify-center items-center border-solid border-5 border-[#374151]")}>
                <h1 className="text-white text-xl font-[Oswald]">Choose your tool</h1> 
                <div className="flex flex-col h-auto space-y-3 justify-center py-5">
                     {filteredTools?.map(tool => (
