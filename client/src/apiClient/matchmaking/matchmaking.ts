@@ -1,6 +1,6 @@
 import { apiGet } from "../apiClient";
-import type { MetaDataDto } from "./dtos";
+import type { MetadataDto } from "./dtos";
 
-export async function getMetadata(): Promise<MetaDataDto> {
+export async function getMetadata(): Promise<MetadataDto> {
     return apiGet("/api/Matchmaking/metadata");
 }

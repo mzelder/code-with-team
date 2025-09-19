@@ -15,7 +15,7 @@ export interface ProgrammingLanguagesDto {
     RoleId: number
 }
 
-export interface MetaDataDto {
+export interface MetadataDto {
     categories: CategoryDto[];
     roles: RoleDto[];
     programmingLanguages: ProgrammingLanguagesDto[];
