@@ -18,9 +18,9 @@ namespace api.Controllers
             _context = context;
         }
 
-        [HttpGet("metadata")]
+        [HttpGet("get-options")]
         [Authorize]
-        public async Task<ActionResult<MetadataDto>> GetMetadata()
+        public async Task<ActionResult<MatchmakingResponseDto>> GetOptions()
         {
             var categories = await _context.Categories
                 .Select(c => new CategoryDto
@@ -48,7 +48,7 @@ namespace api.Controllers
                 })
                 .ToListAsync();
 
-            var result = new MetadataDto
+            var result = new MatchmakingResponseDto
             {
                 Categories = categories,
                 Roles = roles,
@@ -56,6 +56,17 @@ namespace api.Controllers
             };
 
             return Ok(result);
+        }
+
+        [HttpPost("start-queue")]
+        [Authorize]
+        public async Task<IActionResult> StartQueue([FromBody] MatchmakingRequestDto dto)
+        {
+            var categoryId = dto.CategoryId;
+            var roleId = dto.RoleId;
+            var programmingLanguageIds = dto.ProgrammingLanguageIds;
+
+            return Ok($"{categoryId}, {roleId}, {programmingLanguageIds}");
         }
     }
 }

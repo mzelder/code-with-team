@@ -1,9 +1,9 @@
-export interface LoginDto {
+export interface LoginRequestDto {
     username: string;
     password: string;
 }
 
-export interface RegisterDto {
+export interface RegisterRequestDto {
     username: string;
     password: string;
     confirmPassword: string;

@@ -15,13 +15,13 @@ export interface ProgrammingLanguagesResponseDto {
     RoleId: number
 }
 
-export interface MetadataResponseDto {
+export interface MatchmakingResponseDto {
     categories: CategoryResponseDto[];
     roles: RoleResponseDto[];
     programmingLanguages: ProgrammingLanguagesResponseDto[];
 }
 
-export interface MetadataRequestDto {
+export interface MatchmakingRequestDto {
     categoryId: number;
     roleId: number,
     programmingLanguageIds: number[];

@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 import SelectButton from "./SelectButton";
-import type { MetadataResponseDto } from "../../apiClient/matchmaking/dtos";
-import { getMetadata, saveMetadata } from "../../apiClient/matchmaking/matchmaking";
+import type { MatchmakingResponseDto } from "../../apiClient/matchmaking/dtos";
+import { getMatchmakingOptions, startQueue } from "../../apiClient/matchmaking/matchmaking";
 import toast from "react-hot-toast";
 
 function FindTeamForm() {
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
     const [selectedRole, setSelectedRole] = useState<number | null>(null);
     const [selectedTool, setSelectedTool] = useState<number[] | null>(null);
-    const [metadata, setMetadata] = useState<MetadataResponseDto | null>(null);
+    const [metadata, setMetadata] = useState<MatchmakingResponseDto | null>(null);
 
     const handleToggleCategory = (value: number) => setSelectedCategory(value);
     const handleToggleRole = (value: number) => setSelectedRole(value);
@@ -23,7 +23,7 @@ function FindTeamForm() {
         selectedRole: number,
         selectedLanguages: number[]
     ) => {
-        saveMetadata({
+        startQueue({
             categoryId: selectedCategory,
             roleId: selectedRole,
             programmingLanguageIds: selectedLanguages
@@ -43,7 +43,7 @@ function FindTeamForm() {
     useEffect(() => {
         const fetchMetadata = async () => {
             try {
-                const data = await getMetadata();
+                const data = await getMatchmakingOptions();
                 setMetadata(data);
             } catch (error) {
                 toast.error("Something went wrong. Please try again later.");
@@ -103,10 +103,10 @@ function FindTeamForm() {
                     ))}
                </div>
             </div>
-            <div className="flex justify-center items-center w-auto h-auto bg-[#00D1FF] border-solid border-x-10 border-white">
+            <div className="flex justify-center items-center w-auto h-auto bg-[#00D1FF] border-solid border-l-10 border-white">
                 <img src="/arrow.svg" alt="Arrow Icon" />
             </div>
-            <div className="flex w-auto min-w-[15vw] h-auto justify-center items-center bg-white px-5">
+            <div className={clsx(selectedTool ? "blur-none" : "blur-[2px]", "flex w-auto min-w-[15vw] h-auto justify-center items-center bg-white px-5")}>
                 <button 
                     style={{cursor: "pointer"}} 
                     disabled={!(selectedCategory && selectedRole && selectedTool?.length)}

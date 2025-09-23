@@ -1,10 +1,10 @@
 import { apiGet, apiPost } from "../apiClient";
-import type { MetadataRequestDto, MetadataResponseDto } from "./dtos";
+import type { MatchmakingRequestDto, MatchmakingResponseDto } from "./dtos";
 
-export async function getMetadata(): Promise<MetadataResponseDto> {
-    return apiGet("/api/Matchmaking/metadata");
+export async function getMatchmakingOptions(): Promise<MatchmakingResponseDto> {
+    return apiGet("/api/Matchmaking/get-options");
 }
 
-export async function saveMetadata(data: MetadataRequestDto): Promise<void> {
-    return apiPost("/api/Matchmaking/sendmetadata", data);
+export async function startQueue(data: MatchmakingRequestDto): Promise<void> {
+    return apiPost("/api/Matchmaking/start-queue", data);
 }
