@@ -62,11 +62,49 @@ namespace api.Controllers
         [Authorize]
         public async Task<IActionResult> StartQueue([FromBody] MatchmakingRequestDto dto)
         {
-            var categoryId = dto.CategoryId;
-            var roleId = dto.RoleId;
-            var programmingLanguageIds = dto.ProgrammingLanguageIds;
+            var categoryExists = await _context.Categories.AnyAsync(c => c.Id == dto.CategoryId);
+            var roleExists = await _context.Roles.AnyAsync(r => r.Id == dto.RoleId);
+            var validLanguagesIds = await _context.ProgrammingLanguages.Select(p => p.Id).ToListAsync();
+            bool allLanguagesValid = dto.ProgrammingLanguageIds.All(id => validLanguagesIds.Contains(id));
 
-            return Ok($"{categoryId}, {roleId}, {programmingLanguageIds}");
+            if (!categoryExists || !roleExists || !allLanguagesValid)
+            {
+                return BadRequest(new { message = "Something went wrong..." });
+            }
+
+            int userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
+            //var user = await _context.Users.SingleAsync(u => u.Id == userId);
+
+            // Add options that user choose and add row into user selection
+            var userSelection = new UserSelection
+            {
+                UserId = userId,
+                CategoryId = dto.CategoryId,
+                RoleId = dto.RoleId
+            };
+            _context.Add(userSelection);
+
+            // Add all choosen programming languages by user
+            foreach (var languageId in dto.ProgrammingLanguageIds)
+            {
+                _context.Add(new UserLanguage
+                {
+                    UserSelection = userSelection,
+                    ProgrammingLanguageId = languageId
+                }); 
+            };
+
+            // Add user into queue
+            _context.Add(new LobbyQueue
+            {
+                UserId = userId,
+                UserSelection = userSelection,
+                Status = "Queued"
+            });
+
+            await _context.SaveChangesAsync();
+
+            return Ok();
         }
     }
 }

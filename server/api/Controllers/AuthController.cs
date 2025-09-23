@@ -62,7 +62,10 @@ namespace api.Controllers
                 return Unauthorized(new { message = "Invalid username or password" });
             }
 
-            var claims = new List<Claim> { new Claim(ClaimTypes.Name, existingUser.Username) };
+            var claims = new List<Claim> { 
+                new Claim(ClaimTypes.Name, existingUser.Username),
+                new Claim(ClaimTypes.NameIdentifier, existingUser.Id.ToString())
+            };
             var identity = new ClaimsIdentity(claims, "Cookies");
             await HttpContext.SignInAsync("Cookies", new ClaimsPrincipal(identity));
 
