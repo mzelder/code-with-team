@@ -1,4 +1,6 @@
 using api.Data;
+using api.Services;
+using api.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -43,6 +45,8 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IMatchmakingService, MatchmakingService>();
 
 var app = builder.Build();
 

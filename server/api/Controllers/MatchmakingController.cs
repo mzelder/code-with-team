@@ -4,6 +4,8 @@ using api.Data;
 using api.Models;
 using Microsoft.AspNetCore.Authorization;
 using api.Dtos.Matchmaking;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
+using api.Services.Interfaces;
 
 namespace api.Controllers
 {
@@ -12,10 +14,24 @@ namespace api.Controllers
     public class MatchmakingController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IMatchmakingService _matchmakingService;
 
-        public MatchmakingController(AppDbContext context)
+        public MatchmakingController(AppDbContext context, IMatchmakingService matchmakingService)
         {
             _context = context;
+            _matchmakingService = matchmakingService;
+        }
+
+        private int GetCurrentUserId()
+        {
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null)
+            {
+                throw new UnauthorizedAccessException("User ID not found in claims");
+            }
+
+            return int.Parse(userIdClaim.Value);
         }
 
         [HttpGet("get-options")]
@@ -62,49 +78,28 @@ namespace api.Controllers
         [Authorize]
         public async Task<IActionResult> StartQueue([FromBody] MatchmakingRequestDto dto)
         {
-            var categoryExists = await _context.Categories.AnyAsync(c => c.Id == dto.CategoryId);
-            var roleExists = await _context.Roles.AnyAsync(r => r.Id == dto.RoleId);
-            var validLanguagesIds = await _context.ProgrammingLanguages.Select(p => p.Id).ToListAsync();
-            bool allLanguagesValid = dto.ProgrammingLanguageIds.All(id => validLanguagesIds.Contains(id));
-
-            if (!categoryExists || !roleExists || !allLanguagesValid)
+            var response = await _matchmakingService.StartQueueAsync(GetCurrentUserId(), dto);
+            
+            if (!response.Success)
             {
-                return BadRequest(new { message = "Something went wrong..." });
+                return BadRequest(response);
+            } 
+
+            return Ok(response);
+        }
+
+        [HttpGet("queue-time")]
+        [Authorize]
+        public async Task<ActionResult<QueueTimeDto>> GetTimeInQueue()
+        {
+            var response = await _matchmakingService.GetQueueTimeAsync(GetCurrentUserId());
+            
+            if (!response.Success)
+            {
+                return BadRequest(response);
             }
 
-            int userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
-            //var user = await _context.Users.SingleAsync(u => u.Id == userId);
-
-            // Add options that user choose and add row into user selection
-            var userSelection = new UserSelection
-            {
-                UserId = userId,
-                CategoryId = dto.CategoryId,
-                RoleId = dto.RoleId
-            };
-            _context.Add(userSelection);
-
-            // Add all choosen programming languages by user
-            foreach (var languageId in dto.ProgrammingLanguageIds)
-            {
-                _context.Add(new UserLanguage
-                {
-                    UserSelection = userSelection,
-                    ProgrammingLanguageId = languageId
-                }); 
-            };
-
-            // Add user into queue
-            _context.Add(new LobbyQueue
-            {
-                UserId = userId,
-                UserSelection = userSelection,
-                Status = "Queued"
-            });
-
-            await _context.SaveChangesAsync();
-
-            return Ok();
+            return Ok(response);
         }
     }
 }

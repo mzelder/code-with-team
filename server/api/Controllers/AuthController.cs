@@ -7,6 +7,7 @@ using Microsoft.Identity.Client;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using api.Dtos.Auth;
+using api.Dtos;
 
 namespace api.Controllers
 {
@@ -22,16 +23,16 @@ namespace api.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+        public async Task<ActionResult<ApiResponseDto>> Register([FromBody] RegisterDto dto)
         {
             if (await _context.Users.AnyAsync(u => u.Username == dto.Username))
             {
-                return BadRequest(new { message = "Username already exists." });
+                return BadRequest(new ApiResponseDto(false, "Username already exists."));
             }
 
             if (dto.Password != dto.ConfirmPassword)
             {
-                return BadRequest(new { message = "Passwords do not match."});
+                return BadRequest(new ApiResponseDto(false, "Passwords do not match."));
             }
 
             var user = new User
@@ -43,23 +44,18 @@ namespace api.Controllers
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message ="User registered.", success = true});
+            return Ok(new ApiResponseDto(true, "User registered."));
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto dto)
+        public async Task<ActionResult<ApiResponseDto>> Login([FromBody] LoginDto dto)
         {
             var existingUser = await _context.Users.
                 FirstOrDefaultAsync(u => u.Username == dto.Username);
 
-            if (existingUser == null)
+            if (existingUser == null || existingUser.Password != dto.Password)
             {
-                return Unauthorized(new { message = "Invalid username or password"});
-            }
-
-            if (existingUser.Password != dto.Password)
-            {
-                return Unauthorized(new { message = "Invalid username or password" });
+                return Unauthorized(new ApiResponseDto(false, "Invalid username or password"));
             }
 
             var claims = new List<Claim> { 
@@ -69,14 +65,14 @@ namespace api.Controllers
             var identity = new ClaimsIdentity(claims, "Cookies");
             await HttpContext.SignInAsync("Cookies", new ClaimsPrincipal(identity));
 
-            return Ok(new { message = "Login successful", success = true });
+            return Ok(new ApiResponseDto(true, "Login successful"));
         }
 
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync();
-            return Ok(new { message = "Logged out", success = true });
+            return Ok(new ApiResponseDto(true, "Logged out"));
         }
 
         [HttpGet("check")]

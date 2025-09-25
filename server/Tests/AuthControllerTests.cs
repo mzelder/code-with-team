@@ -1,6 +1,6 @@
 using api.Controllers;
 using api.Data;
-using api.Dtos;
+using api.Dtos.Auth;
 using api.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

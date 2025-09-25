@@ -1,4 +1,4 @@
-using api.Models;
+﻿using api.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Data
@@ -21,63 +21,62 @@ namespace api.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Category ? Roles
+            // Category ↔ Roles
             modelBuilder.Entity<Role>()
                 .HasOne(r => r.Category)
                 .WithMany(c => c.Roles)
                 .HasForeignKey(r => r.CategoryId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // Category ? UserSelections
+            // Category ↔ UserSelections
             modelBuilder.Entity<UserSelection>()
                 .HasOne(us => us.Category)
                 .WithMany(c => c.UserSelections)
                 .HasForeignKey(us => us.CategoryId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // Role ? ProgrammingLanguages
+            // Role ↔ ProgrammingLanguages
             modelBuilder.Entity<ProgrammingLanguage>()
                 .HasOne(pl => pl.Role)
                 .WithMany(r => r.ProgrammingLanguages)
                 .HasForeignKey(pl => pl.RoleId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // Role ? UserSelections
+            // Role ↔ UserSelections
             modelBuilder.Entity<UserSelection>()
                 .HasOne(us => us.Role)
                 .WithMany(r => r.UserSelections)
                 .HasForeignKey(us => us.RoleId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // User ? UserSelections
+            // User ↔ UserSelections
             modelBuilder.Entity<UserSelection>()
                 .HasOne(us => us.User)
                 .WithMany(u => u.UserSelections)
                 .HasForeignKey(us => us.UserId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.NoAction); // prevent multiple cascade paths
 
-            // User ? LobbyQueue
+            // User ↔ LobbyQueues
             modelBuilder.Entity<LobbyQueue>()
                 .HasOne(lq => lq.User)
                 .WithMany(u => u.LobbbyQueues)
                 .HasForeignKey(lq => lq.UserId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.NoAction); // prevent multiple cascade paths
 
-            // UserSelection ? UserLanguages
+            // UserSelection ↔ UserLanguages
             modelBuilder.Entity<UserLanguage>()
                 .HasOne(ul => ul.UserSelection)
                 .WithMany(us => us.UserLanguages)
                 .HasForeignKey(ul => ul.UserSelectionId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Cascade); // cascade from UserSelection → UserLanguages
 
-            // UserSelection ? LobbyQueue
-            modelBuilder.Entity<LobbyQueue>()
-                .HasOne(lq => lq.UserSelection)
-                .WithMany(us => us.LobbyQueues)
-                .HasForeignKey(lq => lq.UserSelectionId)
-                .OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<UserSelection>()
+                .HasOne(us => us.LobbyQueue)
+                .WithOne(lq => lq.UserSelection)
+                .HasForeignKey<UserSelection>(us => us.Id)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            // ProgrammingLanguage ? UserLanguages
+            // ProgrammingLanguage ↔ UserLanguages
             modelBuilder.Entity<UserLanguage>()
                 .HasOne(ul => ul.ProgrammingLanguage)
                 .WithMany(pl => pl.UserLanguages)
