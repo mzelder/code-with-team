@@ -2,14 +2,17 @@ import { useEffect, useState } from "react";
 import clsx from "clsx";
 import SelectButton from "./SelectButton";
 import type { MatchmakingResponseDto } from "../../apiClient/matchmaking/dtos";
-import { getMatchmakingOptions, startQueue } from "../../apiClient/matchmaking/matchmaking";
+import { getCurrentTimeInQueue, getMatchmakingOptions, startQueue } from "../../apiClient/matchmaking/matchmaking";
 import toast from "react-hot-toast";
+import StartButton from "./StartButton";
 
 function FindTeamForm() {
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
     const [selectedRole, setSelectedRole] = useState<number | null>(null);
     const [selectedTool, setSelectedTool] = useState<number[] | null>(null);
-    const [metadata, setMetadata] = useState<MatchmakingResponseDto | null>(null);
+    const [options, setOptions] = useState<MatchmakingResponseDto | null>(null);
+    const [searching, setSearching] = useState<boolean>(false);
+    const [timeInQueue, setTimeInQueue] = useState<[number, number]>([0, 0]);
 
     const handleToggleCategory = (value: number) => setSelectedCategory(value);
     const handleToggleRole = (value: number) => setSelectedRole(value);
@@ -30,27 +33,61 @@ function FindTeamForm() {
         });
     };
 
-    const filteredRoles = metadata?.roles.filter(role => { 
+    const formatTime = (time: string): [number, number] => {
+        const splittedTime = time.split(":");
+        const minutes = parseInt(splittedTime[1]);
+        const seconds = Math.floor(parseFloat(splittedTime[2]));
+        return [minutes, seconds];
+    }
+
+    const filteredRoles = options?.roles.filter(role => { 
         const mactchkingRole = selectedCategory === role.categoryId;
         return mactchkingRole;
     });
 
-    const filteredTools = metadata?.programmingLanguages.filter(programmingLanguage => {
+    const filteredTools = options?.programmingLanguages.filter(programmingLanguage => {
         const matchingTool = selectedRole === programmingLanguage.id;
         return matchingTool;
     })
 
     useEffect(() => {
-        const fetchMetadata = async () => {
+        const fetchTime = async () => {
+            try {
+                const time = await getCurrentTimeInQueue();
+                setSearching(time.success);
+                setTimeInQueue(formatTime(time.queueTime));
+            } catch (error) {
+                console.log("not in queue"); // to delete
+            }
+        }
+        
+        const fetchOptions = async () => {
             try {
                 const data = await getMatchmakingOptions();
-                setMetadata(data);
+                setOptions(data);
             } catch (error) {
                 toast.error("Something went wrong. Please try again later.");
             }
         }
 
-        fetchMetadata();
+        fetchOptions();
+        fetchTime();
+        
+        const interval = setInterval(() => {
+            setTimeInQueue(([minutes, seconds]) => {
+                let newSeconds = seconds + 1;
+                let newMinutes = minutes;
+                
+                if (newSeconds >= 60) {
+                    newSeconds = 0;
+                    newMinutes++;
+                }
+
+                return [newMinutes, newSeconds]
+            });
+        }, 1000);
+
+        return () => clearInterval(interval);
     }, []);
 
     return (
@@ -58,7 +95,7 @@ function FindTeamForm() {
             <div className="h-auto w-auto min-w-[15vw] p-5 bg-[#1F2937] justify-center items-center border-solid border-5 border-[#374151]">
                <h1 className="text-white text-xl font-[Oswald]">Choose your playground</h1> 
                <div className="flex flex-col h-auto space-y-3 justify-center py-5">
-                    {metadata?.categories?.map((category) => (
+                    {options?.categories?.map((category) => (
                         <SelectButton
                             key={category.id}
                             text={category.name}
@@ -107,13 +144,11 @@ function FindTeamForm() {
                 <img src="/arrow.svg" alt="Arrow Icon" />
             </div>
             <div className={clsx(selectedTool ? "blur-none" : "blur-[2px]", "flex w-auto min-w-[15vw] h-auto justify-center items-center bg-white px-5")}>
-                <button 
-                    style={{cursor: "pointer"}} 
-                    disabled={!(selectedCategory && selectedRole && selectedTool?.length)}
+                <StartButton
+                    isSearching={searching}
+                    timeInQueue={`${timeInQueue[0]} min ${timeInQueue[1]} sec`}
                     onClick={() => handleStart(selectedCategory!, selectedRole!, selectedTool!)}
-                >
-                    <h1 className="text-3xl text-[#00D1FF] font-[Oswald] font-bold">START</h1>
-                </button>
+                />
             </div>
         </div>
     );

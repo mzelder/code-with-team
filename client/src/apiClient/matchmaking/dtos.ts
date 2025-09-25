@@ -26,3 +26,8 @@ export interface MatchmakingRequestDto {
     roleId: number,
     programmingLanguageIds: number[];
 }
+
+export interface QueueTimeResponseDto {
+    success: boolean,
+    queueTime: string
+}
