@@ -1,15 +1,16 @@
-import type { LoginRequestDto, RegisterRequestDto, LoginResponseDto, RegisterResponseDto, LogoutResponseDto, ValidateCookiesResponseDto } from "./dtos";
-import { apiPost, apiGet } from "../apiClient";
+import type { LoginRequestDto, RegisterRequestDto, ValidateCookiesResponseDto } from "./dtos";
+import type { ApiResponseDto } from "../dtos";
+import { apiPost, apiGet } from "..";
 
-export async function loginUser(data: LoginRequestDto): Promise<LoginResponseDto> {
+export async function loginUser(data: LoginRequestDto): Promise<ApiResponseDto> {
     return apiPost("/api/Auth/login", data);
 }
 
-export async function registerUser(data: RegisterRequestDto): Promise<RegisterResponseDto> {
+export async function registerUser(data: RegisterRequestDto): Promise<ApiResponseDto> {
     return apiPost("/api/Auth/register", data);
 }
 
-export async function logoutUser(): Promise<LogoutResponseDto> {
+export async function logoutUser(): Promise<ApiResponseDto> {
     return apiPost("/api/Auth/logout");
 }
 

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using api.Dtos.Matchmaking;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using api.Services.Interfaces;
+using api.Dtos;
 
 namespace api.Controllers
 {
@@ -74,9 +75,18 @@ namespace api.Controllers
             return Ok(result);
         }
 
+        [HttpGet("get-choosed-options")]
+        [Authorize]
+        public async Task<ActionResult<ChoosedOptionsDto>> GetChoosedOptions()
+        {
+            var response = await _matchmakingService.GetChoosedOptionsAsync(GetCurrentUserId());
+
+            return Ok(response);
+        }
+
         [HttpPost("start-queue")]
         [Authorize]
-        public async Task<IActionResult> StartQueue([FromBody] MatchmakingRequestDto dto)
+        public async Task<IActionResult> StartQueue([FromBody] ChoosedOptionsDto dto)
         {
             var response = await _matchmakingService.StartQueueAsync(GetCurrentUserId(), dto);
             
@@ -88,17 +98,23 @@ namespace api.Controllers
             return Ok(response);
         }
 
+        [HttpDelete("stop-queue")]
+        [Authorize]
+        public async Task<ActionResult<ApiResponseDto>> StopQueue()
+        {
+            var response = await _matchmakingService.StopQueueAsync(GetCurrentUserId());
+
+            if (!response.Success) return BadRequest(response);
+            return Ok(response);
+        }
+
         [HttpGet("queue-time")]
         [Authorize]
         public async Task<ActionResult<QueueTimeDto>> GetTimeInQueue()
         {
             var response = await _matchmakingService.GetQueueTimeAsync(GetCurrentUserId());
             
-            if (!response.Success)
-            {
-                return BadRequest(response);
-            }
-
+            if (!response.Success) return BadRequest(response);
             return Ok(response);
         }
     }

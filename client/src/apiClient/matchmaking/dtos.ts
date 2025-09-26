@@ -21,7 +21,7 @@ export interface MatchmakingResponseDto {
     programmingLanguages: ProgrammingLanguagesResponseDto[];
 }
 
-export interface MatchmakingRequestDto {
+export interface ChoosedOptionsDto {
     categoryId: number;
     roleId: number,
     programmingLanguageIds: number[];

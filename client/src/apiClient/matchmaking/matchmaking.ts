@@ -1,12 +1,21 @@
-import { apiGet, apiPost } from "../apiClient";
-import type { MatchmakingRequestDto, MatchmakingResponseDto, QueueTimeResponseDto } from "./dtos";
+import { apiGet, apiPost, apiDelete } from "..";
+import type { ApiResponseDto } from "../dtos";
+import type { ChoosedOptionsDto, MatchmakingResponseDto, QueueTimeResponseDto } from "./dtos";
 
 export async function getMatchmakingOptions(): Promise<MatchmakingResponseDto> {
     return apiGet("/api/Matchmaking/get-options");
 }
 
-export async function startQueue(data: MatchmakingRequestDto): Promise<void> {
+export async function getMatchmakingChoosedOptions(): Promise<ChoosedOptionsDto> {
+    return apiGet("/api/Matchmaking/get-choosed-options");
+}
+
+export async function startQueue(data: ChoosedOptionsDto): Promise<void> {
     return apiPost("/api/Matchmaking/start-queue", data);
+}
+
+export async function stopQueue(): Promise<ApiResponseDto> {
+    return apiDelete("/api/Matchmaking/stop-queue");
 }
 
 export async function getCurrentTimeInQueue(): Promise<QueueTimeResponseDto> {

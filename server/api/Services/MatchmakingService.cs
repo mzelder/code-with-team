@@ -4,7 +4,9 @@ using api.Dtos.Matchmaking;
 using api.Models;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
 
 namespace api.Services
@@ -18,7 +20,7 @@ namespace api.Services
             _context = context;
         }
 
-        public async Task<ApiResponseDto> StartQueueAsync(int userId, MatchmakingRequestDto dto)
+        public async Task<ApiResponseDto> StartQueueAsync(int userId, ChoosedOptionsDto dto)
         {
             var userInLobby = await _context.LobbyQueues
                 .FirstOrDefaultAsync(l => l.UserId == userId);
@@ -42,8 +44,8 @@ namespace api.Services
             var userSelection = new UserSelection
             {
                 UserId = userId,
-                CategoryId = dto.CategoryId,
-                RoleId = dto.RoleId
+                CategoryId = dto.CategoryId!.Value,
+                RoleId = dto.RoleId!.Value
             };
             _context.Add(userSelection);
 
@@ -62,12 +64,22 @@ namespace api.Services
             {
                 UserId = userId,
                 UserSelection = userSelection,
-                Status = "Queued"
+                Status = LobbyQueue.QueueStatus.InQueue
             });
 
             await _context.SaveChangesAsync();
 
             return new ApiResponseDto(true, "Successfully added to queue.");
+        }
+        public async Task<ApiResponseDto> StopQueueAsync(int userId)
+        {
+            var deletedRows = await _context.LobbyQueues
+                .Where(l => l.UserId == userId)
+                .ExecuteDeleteAsync();
+
+            if (deletedRows == 0) return new ApiResponseDto(false, "No active queue found for this user");
+
+            return new ApiResponseDto(true, "You left queue successfully");
         }
 
         public async Task<QueueTimeDto> GetQueueTimeAsync(int userId)
@@ -77,9 +89,28 @@ namespace api.Services
                 .Select(l => l.JoinedAt)
                 .FirstOrDefaultAsync();
 
-            TimeSpan queueTime = DateTime.Now - jointedAtTime;
+            if (jointedAtTime == null) return new QueueTimeDto(false, "");
+
+            TimeSpan? queueTime = DateTime.Now - jointedAtTime!;
             
-            return new QueueTimeDto(true, queueTime);
+            return new QueueTimeDto(true, queueTime.ToString());
+        }
+
+        public async Task<ChoosedOptionsDto> GetChoosedOptionsAsync(int userId)
+        {
+            var choosedOptions = await _context.UserSelections
+                .Include(us => us.UserLanguages)
+                .Where(us => us.UserId == userId)
+                .FirstOrDefaultAsync();
+
+            return new ChoosedOptionsDto
+            {
+                CategoryId = choosedOptions.CategoryId,
+                RoleId = choosedOptions.RoleId,
+                ProgrammingLanguageIds = choosedOptions.UserLanguages?
+                    .Select(ul => ul.ProgrammingLanguageId)
+                    .ToList()
+            };
         }
     }
 }

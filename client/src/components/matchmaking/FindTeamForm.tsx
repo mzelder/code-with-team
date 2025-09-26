@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 import SelectButton from "./SelectButton";
-import type { MatchmakingResponseDto } from "../../apiClient/matchmaking/dtos";
-import { getCurrentTimeInQueue, getMatchmakingOptions, startQueue } from "../../apiClient/matchmaking/matchmaking";
+import { type MatchmakingResponseDto } from "../../apiClient/matchmaking/dtos";
+import { getCurrentTimeInQueue, getMatchmakingOptions, getMatchmakingChoosedOptions, startQueue, stopQueue } from "../../apiClient/matchmaking/matchmaking";
 import toast from "react-hot-toast";
 import StartButton from "./StartButton";
 
@@ -21,17 +21,53 @@ function FindTeamForm() {
             prev === null ? [value] : prev.filter((v) => v !== value)
         );
     };
-    const handleStart = (
+    const handleQueueToggle = async (
         selectedCategory: number,
         selectedRole: number,
         selectedLanguages: number[]
     ) => {
-        startQueue({
-            categoryId: selectedCategory,
-            roleId: selectedRole,
-            programmingLanguageIds: selectedLanguages
-        });
+        if (searching) {
+            await stopQueue();
+            setSearching(false);
+            setTimeInQueue([0, 0]);
+        } else {
+            await startQueue({
+                categoryId: selectedCategory,
+                roleId: selectedRole,
+                programmingLanguageIds: selectedLanguages
+            });
+            fetchTime();
+        }
+        
     };
+
+    const fetchTime = async () => {
+            try {
+                const time = await getCurrentTimeInQueue();
+                setSearching(time.success);
+                setTimeInQueue(formatTime(time.queueTime));
+            } catch (error) {
+                console.log("not in queue"); // to delete
+            }
+        }
+        
+    const fetchOptions = async () => {
+        try {
+            const data = await getMatchmakingOptions();
+            setOptions(data);
+        } catch (error) {
+            toast.error("Something went wrong. Please try again later.");
+        }
+    }
+
+    const fetchChoosedOptions = async () => {
+        try {
+            const choosedOptions = await getMatchmakingChoosedOptions();
+            setSelectedCategory(choosedOptions.categoryId);
+            setSelectedRole(choosedOptions.roleId);
+            setSelectedTool(choosedOptions.programmingLanguageIds);
+        } catch (error) {}
+    }
 
     const formatTime = (time: string): [number, number] => {
         const splittedTime = time.split(":");
@@ -51,27 +87,9 @@ function FindTeamForm() {
     })
 
     useEffect(() => {
-        const fetchTime = async () => {
-            try {
-                const time = await getCurrentTimeInQueue();
-                setSearching(time.success);
-                setTimeInQueue(formatTime(time.queueTime));
-            } catch (error) {
-                console.log("not in queue"); // to delete
-            }
-        }
-        
-        const fetchOptions = async () => {
-            try {
-                const data = await getMatchmakingOptions();
-                setOptions(data);
-            } catch (error) {
-                toast.error("Something went wrong. Please try again later.");
-            }
-        }
-
         fetchOptions();
         fetchTime();
+        fetchChoosedOptions();
         
         const interval = setInterval(() => {
             setTimeInQueue(([minutes, seconds]) => {
@@ -145,9 +163,10 @@ function FindTeamForm() {
             </div>
             <div className={clsx(selectedTool ? "blur-none" : "blur-[2px]", "flex w-auto min-w-[15vw] h-auto justify-center items-center bg-white px-5")}>
                 <StartButton
+                    options={[selectedCategory, selectedRole, selectedTool]}
                     isSearching={searching}
                     timeInQueue={`${timeInQueue[0]} min ${timeInQueue[1]} sec`}
-                    onClick={() => handleStart(selectedCategory!, selectedRole!, selectedTool!)}
+                    onToggle={() => handleQueueToggle(selectedCategory!, selectedRole!, selectedTool!)}
                 />
             </div>
         </div>
