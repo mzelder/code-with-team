@@ -105,9 +105,9 @@ namespace api.Services
 
             return new ChoosedOptionsDto
             {
-                CategoryId = choosedOptions.CategoryId,
-                RoleId = choosedOptions.RoleId,
-                ProgrammingLanguageIds = choosedOptions.UserLanguages?
+                CategoryId = choosedOptions?.CategoryId,
+                RoleId = choosedOptions?.RoleId,
+                ProgrammingLanguageIds = choosedOptions?.UserLanguages
                     .Select(ul => ul.ProgrammingLanguageId)
                     .ToList()
             };

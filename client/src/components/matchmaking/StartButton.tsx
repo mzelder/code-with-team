@@ -13,12 +13,12 @@ const StartButton: React.FC<StartButtonProps> = ({
     timeInQueue,
     onToggle
 }) => {
-    const isDisabled = options[0] == null || options[1] == null || !options[2] == null;
+    const isDisabled = options[0] == null || options[1] == null || options[2] == null;
 
     return (
         <button
             style={{
-                cursor: "pointer",
+                cursor: isDisabled ? "auto": "pointer",
             }}
             onClick={onToggle}
             disabled={isDisabled}

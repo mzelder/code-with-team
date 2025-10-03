@@ -7,6 +7,7 @@ interface SelectButtonProps {
     selectedColor?: string;
     text: string; 
     isSelected: boolean,
+    isSearching: boolean,
     onToggle: () => void;
 }
 
@@ -17,18 +18,20 @@ const SelectButton: React.FC<SelectButtonProps> = ({
     selectedColor = "#00D1FF",
     text,
     isSelected,
+    isSearching,
     onToggle,
 }) => {
     return (
         <button
             className="rounded border-solid border-1 w-full h-10"
             style={{
-                cursor: "pointer",
+                cursor: isSearching ? "auto" : "pointer",
                 backgroundColor: defaultBgColor,
                 color: isSelected ? selectedColor : defaultTextColor,
                 borderColor: isSelected ? selectedColor : defaultBorderColor
             }}
             onClick={onToggle}
+            disabled={isSearching}
         >
             {text}
         </button>

@@ -38,7 +38,6 @@ function FindTeamForm() {
             });
             fetchTime();
         }
-        
     };
 
     const fetchTime = async () => {
@@ -66,7 +65,9 @@ function FindTeamForm() {
             setSelectedCategory(choosedOptions.categoryId);
             setSelectedRole(choosedOptions.roleId);
             setSelectedTool(choosedOptions.programmingLanguageIds);
-        } catch (error) {}
+        } catch (error) {
+            console.log("null's for choosedOptions");
+        }
     }
 
     const formatTime = (time: string): [number, number] => {
@@ -110,12 +111,13 @@ function FindTeamForm() {
 
     return (
         <div className="flex flex-row w-full h-auto">
-            <div className="h-auto w-auto min-w-[15vw] p-5 bg-[#1F2937] justify-center items-center border-solid border-5 border-[#374151]">
+            <div className="h-auto flex-1 p-5 bg-[#1F2937] justify-center items-center border-solid border-5 border-[#374151]">
                <h1 className="text-white text-xl font-[Oswald]">Choose your playground</h1> 
                <div className="flex flex-col h-auto space-y-3 justify-center py-5">
                     {options?.categories?.map((category) => (
                         <SelectButton
                             key={category.id}
+                            isSearching = {searching}
                             text={category.name}
                             isSelected={selectedCategory === category.id}
                             onToggle={() => {handleToggleCategory(category.id)}}
@@ -126,12 +128,13 @@ function FindTeamForm() {
             <div className="flex justify-center items-center w-auto h-auto bg-[#00D1FF] border-solid border-x-10 border-white">
                 <img src="/arrow.svg" alt="Arrow Icon" />
             </div>
-            <div className={clsx(selectedCategory ? "blur-none" : "blur-[2px]", "h-auto w-auto min-w-[15vw] p-5 bg-[#1F2937] justify-center items-center border-solid border-5 border-[#374151]")}>
+            <div className={clsx(selectedCategory ? "blur-none" : "blur-[2px]", "h-auto flex-1 p-5 bg-[#1F2937] justify-center items-center border-solid border-5 border-[#374151]")}>
                <h1 className="text-white text-xl font-[Oswald]">Now, define your role</h1> 
                <div className="flex flex-col h-auto space-y-3 justify-center py-5">
                     {filteredRoles?.map(role => (
                          <SelectButton
                             key={role.id}
+                            isSearching = {searching}
                             text={role.name}
                             isSelected={selectedRole === role.id}
                             onToggle={() => {
@@ -145,12 +148,13 @@ function FindTeamForm() {
             <div className="flex justify-center items-center w-auto h-auto bg-[#00D1FF] border-solid border-x-10 border-white">
                 <img src="/arrow.svg" alt="Arrow Icon" />
             </div>
-            <div className={clsx(selectedRole ? "blur-none" : "blur-[2px]", "h-auto w-auto min-w-[15vw] p-5 bg-[#1F2937] justify-center items-center border-solid border-5 border-[#374151]")}>
+            <div className={clsx(selectedRole ? "blur-none" : "blur-[2px]", "h-auto flex-1 p-5 bg-[#1F2937] justify-center items-center border-solid border-5 border-[#374151]")}>
                <h1 className="text-white text-xl font-[Oswald]">Choose your tool</h1> 
                <div className="flex flex-col h-auto space-y-3 justify-center py-5">
                     {filteredTools?.map(tool => (
                         <SelectButton
                             key={tool.id}
+                            isSearching = {searching}
                             text={tool.name}
                             isSelected={selectedTool?.includes(tool.id) ?? false}
                             onToggle={() => handleToggleTool(tool.id)}
@@ -161,7 +165,7 @@ function FindTeamForm() {
             <div className="flex justify-center items-center w-auto h-auto bg-[#00D1FF] border-solid border-l-10 border-white">
                 <img src="/arrow.svg" alt="Arrow Icon" />
             </div>
-            <div className={clsx(selectedTool ? "blur-none" : "blur-[2px]", "flex w-auto min-w-[15vw] h-auto justify-center items-center bg-white px-5")}>
+            <div className={clsx(selectedTool ? "blur-none" : "blur-[2px]", "flex flex-1 h-auto justify-center items-center bg-white px-5")}>
                 <StartButton
                     options={[selectedCategory, selectedRole, selectedTool]}
                     isSearching={searching}
