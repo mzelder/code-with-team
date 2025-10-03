@@ -16,6 +16,8 @@ namespace api.Data
         public DbSet<UserSelection> UserSelections { get; set; }
         public DbSet<ProgrammingLanguage> ProgrammingLanguages { get; set; }
         public DbSet<LobbyQueue> LobbyQueues { get; set; }
+        public DbSet<Lobby> Lobbies { get; set; }
+        public DbSet<LobbyMember> LobbyMembers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
