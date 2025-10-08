@@ -1,5 +1,6 @@
 ﻿using api.Dtos;
 using api.Dtos.Matchmaking;
+using api.Models;
 
 namespace api.Services.Interfaces
 {
@@ -9,5 +10,6 @@ namespace api.Services.Interfaces
         Task<ApiResponseDto> StopQueueAsync(int userId);
         Task<QueueTimeDto> GetQueueTimeAsync(int userId);
         Task<ChoosedOptionsDto> GetChoosedOptionsAsync(int userId);
+        Task<LobbyStatusDto> TryGetLobbyAsync();
     }
 }

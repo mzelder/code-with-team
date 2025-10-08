@@ -117,5 +117,29 @@ namespace api.Controllers
             if (!response.Success) return BadRequest(response);
             return Ok(response);
         }
+
+        [HttpGet("wait-for-lobby")]
+        [Authorize]
+        public async Task<ActionResult<LobbyStatusDto>> WaitForLobby()
+        {
+            LobbyStatusDto? lobbyStatus = null;
+            const int timeoutSeconds = 20;
+            const int pollIntervalSeconds = 10;
+            var startTime = DateTime.UtcNow;
+
+            while ((DateTime.UtcNow - startTime).TotalSeconds < timeoutSeconds)
+            {
+                lobbyStatus = await _matchmakingService.TryGetLobbyAsync();
+
+                if (lobbyStatus != null && lobbyStatus.Found)
+                {
+                    return Ok(lobbyStatus);
+                }
+
+                await Task.Delay(pollIntervalSeconds * 1000);
+            }
+
+            return StatusCode(408, lobbyStatus);
+        }
     }
 }

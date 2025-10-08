@@ -112,5 +112,87 @@ namespace api.Services
                     .ToList()
             };
         }
+
+        public async Task<LobbyStatusDto> TryGetLobbyAsync()
+        {
+            var usersInQueue = await _context.LobbyQueues
+                .Include(lq => lq.UserSelection)
+                    .ThenInclude(us => us.Category)
+                .Include(lq => lq.UserSelection)
+                    .ThenInclude(us => us.Role)
+                .Include(lq => lq.User)
+                .ToListAsync();
+            var groupedByCategory = usersInQueue.GroupBy(u => u.UserSelection.CategoryId);
+
+            Lobby? lobby = null;
+            List<LobbyMember>? potentialLobbyMembers = new List<LobbyMember>();
+
+            foreach (var group in groupedByCategory)
+            {
+                potentialLobbyMembers = new List<LobbyMember>();
+
+                foreach (var user in group)
+                {
+                    if (potentialLobbyMembers.Any(plm => plm.User == user.User)) continue;
+                    if (potentialLobbyMembers.Any(plm => plm.UserSelection.Role == user.UserSelection.Role)) continue;
+
+                    potentialLobbyMembers.Add(new LobbyMember
+                    {
+                        UserId = user.UserId,
+                        User = user.User,
+                        UserSelectionId = user.UserSelectionId,
+                        UserSelection = user.UserSelection,
+                        JoinedAt = DateTime.UtcNow
+                    });
+                }
+
+                if (potentialLobbyMembers.Count >= 4)
+                {
+                    lobby = new Lobby
+                    {
+                        Status = "Active",
+                        CreatedAt = DateTime.Now,
+                    };
+                    _context.Add(lobby);
+
+                    foreach (var member in potentialLobbyMembers)
+                    {
+                        _context.Add(new LobbyMember
+                        {
+                            Lobby = lobby,
+                            User = member.User,
+                            UserSelection = member.UserSelection,
+                            JoinedAt = DateTime.Now
+                        });
+                    }
+
+                    var userIdsToDelete = potentialLobbyMembers.Select(pm => pm.UserId).ToList();
+                    _context.LobbyQueues.RemoveRange(
+                        _context.LobbyQueues.Where(lq => userIdsToDelete.Contains(lq.UserId))
+                    );
+
+                    await _context.SaveChangesAsync();
+
+                    return new LobbyStatusDto
+                    {
+                        Found = true,
+                        LobbyId = lobby.Id,
+                        Members = potentialLobbyMembers.Select(pm => new LobbyMemberDto
+                        {
+                            Name = pm.User.Username,
+                            Category = pm.UserSelection.Category.Name,
+                            Role = pm.UserSelection.Role.Name
+                        }).ToList()
+                    };
+                }
+            }
+
+            return new LobbyStatusDto
+            {
+                Found = false,
+                LobbyId = null,
+                Members = null
+            };
+        }
     }
 }
