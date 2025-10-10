@@ -47,6 +47,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IMatchmakingService, MatchmakingService>();
+builder.Services.AddScoped<IMatchmakingService, MatchmakingService>();
+builder.Services.AddHostedService<api.Services.Hosted.MatchmakingBackgroundService>();
 
 var app = builder.Build();
 
@@ -66,4 +68,3 @@ app.MapControllers();
 
 app.Run();
 
-public partial class Program { }

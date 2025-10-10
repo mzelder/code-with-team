@@ -10,6 +10,7 @@ namespace api.Services.Interfaces
         Task<ApiResponseDto> StopQueueAsync(int userId);
         Task<QueueTimeDto> GetQueueTimeAsync(int userId);
         Task<ChoosedOptionsDto> GetChoosedOptionsAsync(int userId);
-        Task<LobbyStatusDto> TryGetLobbyAsync();
+        Task<LobbyStatusDto> GetLobbyStatusAsync(int userId, CancellationToken ct = default);
+        Task FormLobbiesAsync(CancellationToken ct = default);
     }
 }

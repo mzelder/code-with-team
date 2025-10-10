@@ -1,16 +1,11 @@
 ﻿using api.Data;
 using api.Models;
+using api.Services;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Tests
 {
-    public class MatchmakingFindingTeamTests
+    public class MatchmakingCreatingLobbyTests
     {
         private AppDbContext GetDbContext()
         {
@@ -21,7 +16,7 @@ namespace Tests
         }
 
         [Fact]
-        public async Task TryGetLobbyAsync_WithEnoughUniqueRoles_ReturnsLobby()
+        public async Task GetLobbyStatusAsync_WithEnoughUniqueRoles_ReturnsLobby()
         {
             var db = GetDbContext();
 
@@ -60,32 +55,31 @@ namespace Tests
                 };
                 db.UserSelections.Add(selection);
 
-                db.LobbyQueues.Add(new LobbyQueue
+                db.LobbyMembers.Add(new LobbyMember
                 {
                     Id = i + 1,
                     UserId = users[i].Id,
                     User = users[i],
                     UserSelectionId = selection.Id,
                     UserSelection = selection,
-                    Status = LobbyQueue.QueueStatus.InQueue,
+                    Status = LobbyMember.QueueStatus.InQueue,
                     JoinedAt = DateTime.UtcNow
                 });
             }
 
             db.SaveChanges();
+            var service = new MatchmakingService(db);
 
-            var service = new api.Services.MatchmakingService(db);
+            await service.FormLobbiesAsync();
+            var result = await service.GetLobbyStatusAsync(users[0].Id);
 
-            var result = await service.TryGetLobbyAsync();
-
-            Assert.NotNull(result);
             Assert.True(result.Found);
             Assert.NotNull(result.LobbyId);
-            Assert.Equal(4, result.Members.Count);
+            Assert.Equal(4, result.Members!.Count);
         }
 
         [Fact]
-        public async Task TryGetLobbyAsync_NotEnoughUsers_ReturnsNull()
+        public async Task GetLobbyStatusAsync_NotEnoughUsers_ReturnsNull()
         {
             var db = GetDbContext();
 
@@ -123,23 +117,23 @@ namespace Tests
                 };
                 db.UserSelections.Add(selection);
 
-                db.LobbyQueues.Add(new LobbyQueue
+                db.LobbyMembers.Add(new LobbyMember
                 {
                     Id = i + 1,
                     UserId = users[i].Id,
                     User = users[i],
                     UserSelectionId = selection.Id,
                     UserSelection = selection,
-                    Status = LobbyQueue.QueueStatus.InQueue,
+                    Status = LobbyMember.QueueStatus.InQueue,
                     JoinedAt = DateTime.UtcNow
                 });
             }
 
             db.SaveChanges();
+            var service = new MatchmakingService(db);
 
-            var service = new api.Services.MatchmakingService(db);
-
-            var result = await service.TryGetLobbyAsync();
+            await service.FormLobbiesAsync();
+            var result = await service.GetLobbyStatusAsync(users[0].Id);
 
             Assert.False(result.Found);
             Assert.Null(result.LobbyId);
@@ -147,7 +141,7 @@ namespace Tests
         }
 
         [Fact]
-        public async Task TryGetLobbyAsync_WithoutEnoughUniqueRoles_ReturnsNull()
+        public async Task GetLobbyStatusAsync_WithoutEnoughUniqueRoles_ReturnsNull()
         {
             var db = GetDbContext();
 
@@ -186,23 +180,23 @@ namespace Tests
                 };
                 db.UserSelections.Add(selection);
 
-                db.LobbyQueues.Add(new LobbyQueue
+                db.LobbyMembers.Add(new LobbyMember
                 {
                     Id = i + 1,
                     UserId = users[i].Id,
                     User = users[i],
                     UserSelectionId = selection.Id,
                     UserSelection = selection,
-                    Status = LobbyQueue.QueueStatus.InQueue,
+                    Status = LobbyMember.QueueStatus.InQueue,
                     JoinedAt = DateTime.UtcNow
                 });
             }
 
             db.SaveChanges();
+            var service = new MatchmakingService(db);
 
-            var service = new api.Services.MatchmakingService(db);
-
-            var result = await service.TryGetLobbyAsync();
+            await service.FormLobbiesAsync();
+            var result = await service.GetLobbyStatusAsync(users[0].Id);
 
             Assert.False(result.Found);
             Assert.Null(result.LobbyId);
@@ -210,11 +204,13 @@ namespace Tests
         }
 
         [Fact]
-        public async Task TryGetLobbyAsync_MoreThanEnoguhUsersWithUniqueRoles_ReturnsLobby()
+        public async Task GetLobbyStatusAsync_MoreThanEnoguhUsersWithUniqueRoles_ReturnsLobby()
         {
             var db = GetDbContext();
+
             var category = new Category { Id = 1, Name = "Web Development" };
             db.Categories.Add(category);
+
             var roles = new List<Role>
             {
                 new Role { Id = 1, Name = "Role1", CategoryId = 1, Category = category },
@@ -223,6 +219,7 @@ namespace Tests
                 new Role { Id = 4, Name = "Role4", CategoryId = 1, Category = category }
             };
             db.Roles.AddRange(roles);
+
             var users = new List<User>
             {
                 new User { Id = 1, Username = "User1", Password = "pass" },
@@ -233,6 +230,7 @@ namespace Tests
                 new User { Id = 6, Username = "User6", Password = "pass" }
             };
             db.Users.AddRange(users);
+            
             for (int i = 0; i < users.Count; i++)
             {
                 var selection = new UserSelection
@@ -246,31 +244,33 @@ namespace Tests
                     Role = roles[i % roles.Count]
                 };
                 db.UserSelections.Add(selection);
-                db.LobbyQueues.Add(new LobbyQueue
+                db.LobbyMembers.Add(new LobbyMember
                 {
                     Id = i + 1,
                     UserId = users[i].Id,
                     User = users[i],
                     UserSelectionId = selection.Id,
                     UserSelection = selection,
-                    Status = LobbyQueue.QueueStatus.InQueue,
+                    Status = LobbyMember.QueueStatus.InQueue,
                     JoinedAt = DateTime.UtcNow
                 });
             }
             db.SaveChanges();
 
-            var service = new api.Services.MatchmakingService(db);
-            var result = await service.TryGetLobbyAsync();
+            var service = new MatchmakingService(db);
+            await service.FormLobbiesAsync();
+            var memberCount = await db.LobbyMembers.CountAsync();
 
-            Assert.NotNull(result);
+            var result = await service.GetLobbyStatusAsync(users[0].Id);
+
             Assert.True(result.Found);
             Assert.NotNull(result.LobbyId);
-            Assert.Equal(4, result.Members.Count);
+            Assert.Equal(4, result.Members!.Count);
             Assert.All(result.Members, m => Assert.Contains(m.Name, users.Select(u => u.Username)));
         }
 
-            [Fact]
-        public async Task TryGetLobbyAsync_MoreThanOneCategory_ReturnsMultipleLobbies()
+        [Fact]
+        public async Task GetLobbyStatusAsync_MoreThanOneCategory_ReturnsMultipleLobbies()
         {
             var db = GetDbContext();
 
@@ -326,14 +326,14 @@ namespace Tests
                 };
                 db.UserSelections.Add(selection);
 
-                db.LobbyQueues.Add(new LobbyQueue
+                db.LobbyMembers.Add(new LobbyMember
                 {
                     Id = i + 1,
                     UserId = usersCat1[i].Id,
                     User = usersCat1[i],
                     UserSelectionId = selection.Id,
                     UserSelection = selection,
-                    Status = LobbyQueue.QueueStatus.InQueue,
+                    Status = LobbyMember.QueueStatus.InQueue,
                     JoinedAt = DateTime.UtcNow
                 });
             }
@@ -352,52 +352,48 @@ namespace Tests
                 };
                 db.UserSelections.Add(selection);
 
-                db.LobbyQueues.Add(new LobbyQueue
+                db.LobbyMembers.Add(new LobbyMember
                 {
                     Id = 5 + i,
                     UserId = usersCat2[i].Id,
                     User = usersCat2[i],
                     UserSelectionId = selection.Id,
                     UserSelection = selection,
-                    Status = LobbyQueue.QueueStatus.InQueue,
+                    Status = LobbyMember.QueueStatus.InQueue,
                     JoinedAt = DateTime.UtcNow
                 });
             }
 
             db.SaveChanges();
+            var service = new MatchmakingService(db);
 
-            var service = new api.Services.MatchmakingService(db);
+            // First formation (category1)
+            await service.FormLobbiesAsync();
+            var statusCat1 = await service.GetLobbyStatusAsync(usersCat1[0].Id);
+            Assert.True(statusCat1.Found);
+            Assert.Equal(4, statusCat1.Members!.Count);
 
-            var result1 = await service.TryGetLobbyAsync();
-            Assert.NotNull(result1);
-            Assert.True(result1.Found);
-            Assert.NotNull(result1.LobbyId);
-            Assert.Equal(4, result1.Members.Count);
-            Assert.All(result1.Members, m => Assert.Contains(m.Name, usersCat1.Select(u => u.Username)));
-
-            db.SaveChanges();
-
-            var result2 = await service.TryGetLobbyAsync();
-            Assert.NotNull(result2);
-            Assert.True(result2.Found);
-            Assert.NotNull(result2.LobbyId);
-            Assert.Equal(4, result2.Members.Count);
-            Assert.All(result2.Members, m => Assert.Contains(m.Name, usersCat2.Select(u => u.Username)));
+            // Second formation (remaining category2)
+            await service.FormLobbiesAsync();
+            var statusCat2 = await service.GetLobbyStatusAsync(usersCat2[0].Id);
+            Assert.True(statusCat2.Found);
+            Assert.Equal(4, statusCat2.Members!.Count);
         }
 
+        // 6. Empty queue -> Found false
         [Fact]
-        public async Task TryGetLobbyAsync_EmptyQueue_ReturnsNull()
+        public async Task GetLobbyStatusAsync_EmptyQueue_ReturnsNull()
         {
             var db = GetDbContext();
+            var service = new MatchmakingService(db);
 
-            var service = new api.Services.MatchmakingService(db);
-            var result = await service.TryGetLobbyAsync();
+            await service.FormLobbiesAsync();
+            var result = await service.GetLobbyStatusAsync(1);
 
-            Assert.NotNull(result);
             Assert.False(result.Found);
             Assert.Null(result.LobbyId);
             Assert.Null(result.Members);
-            Assert.Equal(0, await db.LobbyQueues.CountAsync());
+            Assert.Equal(0, await db.LobbyMembers.CountAsync());
             Assert.Equal(0, await db.Lobbies.CountAsync());
             Assert.Equal(0, await db.LobbyMembers.CountAsync());
         }

@@ -15,9 +15,8 @@ namespace api.Data
         public DbSet<UserLanguage> UserLanguages { get; set; }
         public DbSet<UserSelection> UserSelections { get; set; }
         public DbSet<ProgrammingLanguage> ProgrammingLanguages { get; set; }
-        public DbSet<LobbyQueue> LobbyQueues { get; set; }
-        public DbSet<Lobby> Lobbies { get; set; }
         public DbSet<LobbyMember> LobbyMembers { get; set; }
+        public DbSet<Lobby> Lobbies { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -58,8 +57,8 @@ namespace api.Data
                 .HasForeignKey(us => us.UserId)
                 .OnDelete(DeleteBehavior.NoAction); // prevent multiple cascade paths
 
-            // User ↔ LobbyQueues
-            modelBuilder.Entity<LobbyQueue>()
+            // User ↔ LobbyMembers
+            modelBuilder.Entity<LobbyMember>()
                 .HasOne(lq => lq.User)
                 .WithMany(u => u.LobbbyQueues)
                 .HasForeignKey(lq => lq.UserId)
@@ -89,7 +88,7 @@ namespace api.Data
                 .Property(u => u.CreatedAt)
                 .HasDefaultValueSql("GETDATE()");
 
-            modelBuilder.Entity<LobbyQueue>()
+            modelBuilder.Entity<LobbyMember>()
                 .Property(u => u.JoinedAt)
                 .HasDefaultValueSql("GETDATE()");
 

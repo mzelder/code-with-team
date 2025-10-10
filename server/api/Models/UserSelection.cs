@@ -10,6 +10,6 @@
         public int RoleId { get; set; }
         public Role Role { get; set; }
         public ICollection<UserLanguage> UserLanguages { get; set; }
-        public LobbyQueue LobbyQueue { get; set; }
+        public LobbyMember LobbyQueue { get; set; }
     }
 }

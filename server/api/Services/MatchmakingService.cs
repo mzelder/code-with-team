@@ -14,6 +14,7 @@ namespace api.Services
     public class MatchmakingService : IMatchmakingService
     {
         private readonly AppDbContext _context;
+        private const int _lobbySize = 4;
 
         public MatchmakingService(AppDbContext context)
         {
@@ -22,7 +23,7 @@ namespace api.Services
 
         public async Task<ApiResponseDto> StartQueueAsync(int userId, ChoosedOptionsDto dto)
         {
-            var userInLobby = await _context.LobbyQueues
+            var userInLobby = await _context.LobbyMembers
                 .FirstOrDefaultAsync(l => l.UserId == userId);
 
             if (userInLobby != null)
@@ -57,14 +58,15 @@ namespace api.Services
                     UserSelection = userSelection,
                     ProgrammingLanguageId = languageId
                 });
-            };
+            }
+            ;
 
             // Add user into queue
-            _context.Add(new LobbyQueue
+            _context.Add(new LobbyMember
             {
                 UserId = userId,
                 UserSelection = userSelection,
-                Status = LobbyQueue.QueueStatus.InQueue
+                Status = LobbyMember.QueueStatus.InQueue
             });
 
             await _context.SaveChangesAsync();
@@ -73,7 +75,7 @@ namespace api.Services
         }
         public async Task<ApiResponseDto> StopQueueAsync(int userId)
         {
-            var deletedRows = await _context.LobbyQueues
+            var deletedRows = await _context.LobbyMembers
                 .Where(l => l.UserId == userId)
                 .ExecuteDeleteAsync();
 
@@ -84,7 +86,7 @@ namespace api.Services
 
         public async Task<QueueTimeDto> GetQueueTimeAsync(int userId)
         {
-            var jointedAtTime = await _context.LobbyQueues
+            var jointedAtTime = await _context.LobbyMembers
                 .Where(l => l.UserId == userId)
                 .Select(l => l.JoinedAt)
                 .FirstOrDefaultAsync();
@@ -92,7 +94,7 @@ namespace api.Services
             if (jointedAtTime == null) return new QueueTimeDto(false, "");
 
             TimeSpan? queueTime = DateTime.Now - jointedAtTime!;
-            
+
             return new QueueTimeDto(true, queueTime.ToString());
         }
 
@@ -113,86 +115,89 @@ namespace api.Services
             };
         }
 
-        public async Task<LobbyStatusDto> TryGetLobbyAsync()
+        public async Task<LobbyStatusDto> GetLobbyStatusAsync(int userId, CancellationToken ct = default)
         {
-            var usersInQueue = await _context.LobbyQueues
+            var lobbyId = await _context.LobbyMembers
+                 .Where(lm => lm.UserId == userId)
+                 .Select(lm => (int?)lm.LobbyId)
+                 .FirstOrDefaultAsync(ct);
+
+            if (lobbyId == null)
+            {
+                return new LobbyStatusDto
+                {
+                    Found = false,
+                    LobbyId = null,
+                    Members = null
+                };
+            }
+
+            var members = await _context.LobbyMembers
+                .Include(lm => lm.User)
+                .Include(lm => lm.UserSelection)
+                    .ThenInclude(us => us.Category)
+                .Include(lm => lm.UserSelection)
+                    .ThenInclude(us => us.Role)
+                .Where(lm => lm.LobbyId == lobbyId.Value)
+                .ToListAsync(ct);
+
+            return new LobbyStatusDto
+            {
+                Found = true,
+                LobbyId = lobbyId,
+                Members = members.Select(m => new LobbyMemberDto
+                {
+                    Name = m.User.Username,
+                    Category = m.UserSelection.Category.Name,
+                    Role = m.UserSelection.Role.Name
+                }).ToList()
+            };
+        }
+
+        public async Task FormLobbiesAsync(CancellationToken ct = default)
+        {
+            var usersInQueue = await _context.LobbyMembers
                 .Include(lq => lq.UserSelection)
                     .ThenInclude(us => us.Category)
                 .Include(lq => lq.UserSelection)
                     .ThenInclude(us => us.Role)
                 .Include(lq => lq.User)
-                .ToListAsync();
+                .ToListAsync(ct);
+
+            if (usersInQueue.Count == 0) return;
+
             var groupedByCategory = usersInQueue.GroupBy(u => u.UserSelection.CategoryId);
-
-            Lobby? lobby = null;
-            List<LobbyMember>? potentialLobbyMembers = new List<LobbyMember>();
-
             foreach (var group in groupedByCategory)
             {
-                potentialLobbyMembers = new List<LobbyMember>();
-
+                var potentialLobbyMembers = new List<LobbyMember>();
                 foreach (var user in group)
                 {
                     if (potentialLobbyMembers.Any(plm => plm.User == user.User)) continue;
                     if (potentialLobbyMembers.Any(plm => plm.UserSelection.Role == user.UserSelection.Role)) continue;
 
-                    potentialLobbyMembers.Add(new LobbyMember
-                    {
-                        UserId = user.UserId,
-                        User = user.User,
-                        UserSelectionId = user.UserSelectionId,
-                        UserSelection = user.UserSelection,
-                        JoinedAt = DateTime.UtcNow
-                    });
+                    potentialLobbyMembers.Add(user);
+
+                    if (potentialLobbyMembers.Count == 4) break;
                 }
 
-                if (potentialLobbyMembers.Count >= 4)
+                if (potentialLobbyMembers.Count == 4)
                 {
-                    lobby = new Lobby
+                    var lobby = new Lobby
                     {
                         Status = "Active",
                         CreatedAt = DateTime.Now,
                     };
-                    _context.Add(lobby);
+                    _context.Lobbies.Add(lobby);
 
                     foreach (var member in potentialLobbyMembers)
                     {
-                        _context.Add(new LobbyMember
-                        {
-                            Lobby = lobby,
-                            User = member.User,
-                            UserSelection = member.UserSelection,
-                            JoinedAt = DateTime.Now
-                        });
+                        member.Lobby = lobby;
+                        member.Status = LobbyMember.QueueStatus.FoundLobby;
                     }
 
-                    var userIdsToDelete = potentialLobbyMembers.Select(pm => pm.UserId).ToList();
-                    _context.LobbyQueues.RemoveRange(
-                        _context.LobbyQueues.Where(lq => userIdsToDelete.Contains(lq.UserId))
-                    );
-
                     await _context.SaveChangesAsync();
-
-                    return new LobbyStatusDto
-                    {
-                        Found = true,
-                        LobbyId = lobby.Id,
-                        Members = potentialLobbyMembers.Select(pm => new LobbyMemberDto
-                        {
-                            Name = pm.User.Username,
-                            Category = pm.UserSelection.Category.Name,
-                            Role = pm.UserSelection.Role.Name
-                        }).ToList()
-                    };
                 }
             }
-
-            return new LobbyStatusDto
-            {
-                Found = false,
-                LobbyId = null,
-                Members = null
-            };
         }
     }
 }

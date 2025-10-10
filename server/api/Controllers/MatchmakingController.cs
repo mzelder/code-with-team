@@ -7,6 +7,7 @@ using api.Dtos.Matchmaking;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using api.Services.Interfaces;
 using api.Dtos;
+using System.Data;
 
 namespace api.Controllers
 {
@@ -120,26 +121,24 @@ namespace api.Controllers
 
         [HttpGet("wait-for-lobby")]
         [Authorize]
-        public async Task<ActionResult<LobbyStatusDto>> WaitForLobby()
+        public async Task<ActionResult<LobbyStatusDto>> WaitForLobby(CancellationToken ct)
         {
-            LobbyStatusDto? lobbyStatus = null;
-            const int timeoutSeconds = 20;
-            const int pollIntervalSeconds = 10;
-            var startTime = DateTime.UtcNow;
+            const int timeoutSeconds = 60;
+            const int pollIntervalMs = 1000;
+            var end = DateTime.UtcNow.AddSeconds(timeoutSeconds);
 
-            while ((DateTime.UtcNow - startTime).TotalSeconds < timeoutSeconds)
+            LobbyStatusDto status = new() { Found = false, LobbyId = null, Members = null };
+
+            while (DateTime.UtcNow < end && !ct.IsCancellationRequested)
             {
-                lobbyStatus = await _matchmakingService.TryGetLobbyAsync();
+                status = await _matchmakingService.GetLobbyStatusAsync(GetCurrentUserId(), ct);
 
-                if (lobbyStatus != null && lobbyStatus.Found)
-                {
-                    return Ok(lobbyStatus);
-                }
+                if (status.Found) return Ok(status);
 
-                await Task.Delay(pollIntervalSeconds * 1000);
+                await Task.Delay(pollIntervalMs, ct);
             }
 
-            return StatusCode(408, lobbyStatus);
+            return StatusCode(408, status);
         }
     }
 }
