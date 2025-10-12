@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import clsx from "clsx";
 import SelectButton from "./SelectButton";
 import { type MatchmakingResponseDto } from "../../apiClient/matchmaking/dtos";
-import { getCurrentTimeInQueue, getMatchmakingOptions, getMatchmakingChoosedOptions, startQueue, stopQueue } from "../../apiClient/matchmaking/matchmaking";
+import { getCurrentTimeInQueue, getMatchmakingOptions, getMatchmakingChoosedOptions, startQueue, stopQueue, getLobbyStatus } from "../../apiClient/matchmaking/matchmaking";
 import toast from "react-hot-toast";
 import StartButton from "./StartButton";
 
@@ -70,6 +70,12 @@ function FindTeamForm() {
         }
     }
 
+    const fetchLobbyStatus = async() => {
+        // try {
+            const lobbyStatus = await getLobbyStatus();
+        // }//todo
+    };
+    
     const formatTime = (time: string): [number, number] => {
         const splittedTime = time.split(":");
         const minutes = parseInt(splittedTime[1]);
