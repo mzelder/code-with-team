@@ -2,17 +2,25 @@ import { useEffect, useState } from "react";
 import clsx from "clsx";
 import SelectButton from "./SelectButton";
 import { type MatchmakingResponseDto } from "../../apiClient/matchmaking/dtos";
-import { getCurrentTimeInQueue, getMatchmakingOptions, getMatchmakingChoosedOptions, startQueue, stopQueue, getLobbyStatus } from "../../apiClient/matchmaking/matchmaking";
+import { getCurrentTimeInQueue, getMatchmakingOptions, getMatchmakingChoosedOptions, startQueue, stopQueue } from "../../apiClient/matchmaking/matchmaking";
 import toast from "react-hot-toast";
 import StartButton from "./StartButton";
 
-function FindTeamForm() {
+interface TeamSelectionViewProps {
+    onQueueStateChange: (isQueuing: boolean) => void;
+}
+
+function TeamSelectionView({ onQueueStateChange }: TeamSelectionViewProps) {
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
     const [selectedRole, setSelectedRole] = useState<number | null>(null);
     const [selectedTool, setSelectedTool] = useState<number[] | null>(null);
     const [options, setOptions] = useState<MatchmakingResponseDto | null>(null);
     const [searching, setSearching] = useState<boolean>(false);
     const [timeInQueue, setTimeInQueue] = useState<[number, number]>([0, 0]);
+
+    useEffect(() => {
+        onQueueStateChange(searching);
+    }, [searching, onQueueStateChange]);
 
     const handleToggleCategory = (value: number) => setSelectedCategory(value);
     const handleToggleRole = (value: number) => setSelectedRole(value);
@@ -69,12 +77,6 @@ function FindTeamForm() {
             console.log("null's for choosedOptions");
         }
     }
-
-    const fetchLobbyStatus = async() => {
-        // try {
-            const lobbyStatus = await getLobbyStatus();
-        // }//todo
-    };
     
     const formatTime = (time: string): [number, number] => {
         const splittedTime = time.split(":");
@@ -97,6 +99,10 @@ function FindTeamForm() {
         fetchOptions();
         fetchTime();
         fetchChoosedOptions();
+    }, []);
+        
+    useEffect(() => {
+        if (!searching) return;
         
         const interval = setInterval(() => {
             setTimeInQueue(([minutes, seconds]) => {
@@ -111,9 +117,8 @@ function FindTeamForm() {
                 return [newMinutes, newSeconds]
             });
         }, 1000);
-
         return () => clearInterval(interval);
-    }, []);
+    }, [searching]);
 
     return (
         <div className="flex flex-row w-full h-auto">
@@ -183,4 +188,4 @@ function FindTeamForm() {
     );
 }
 
-export default FindTeamForm;
+export default TeamSelectionView;

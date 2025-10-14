@@ -16,7 +16,7 @@ function LoginForm() {
             const isSuccess = result?.success;
             
             if (isSuccess) {
-                navigate("/dashboard", { replace: true });
+                navigate("/app", { replace: true });
                 toast.success("Login successful!");
             }
         } catch (e) {
