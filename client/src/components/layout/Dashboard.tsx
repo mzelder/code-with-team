@@ -3,10 +3,10 @@ import SideMenu from "./SideMenu";
 
 function Dashboard() {
     return (
-        <div className="flex h-screen">
+        <div className="flex h-full">
             <SideMenu></SideMenu>
 
-            <div className="flex-1 p-6">
+            <div className="flex-1 h-full">
                 <Outlet />
             </div>
             

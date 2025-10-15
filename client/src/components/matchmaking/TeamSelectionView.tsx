@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import clsx from "clsx";
-import SelectButton from "./SelectButton";
+import Button from "../shared/Button";
 import { type MatchmakingResponseDto } from "../../apiClient/matchmaking/dtos";
 import { getCurrentTimeInQueue, getMatchmakingOptions, getMatchmakingChoosedOptions, startQueue, stopQueue } from "../../apiClient/matchmaking/matchmaking";
 import toast from "react-hot-toast";
@@ -122,13 +122,13 @@ function TeamSelectionView({ onQueueStateChange }: TeamSelectionViewProps) {
 
     return (
         <div className="flex flex-row w-full h-auto">
-            <div className="h-auto flex-1 p-5 bg-[#1F2937] justify-center items-center border-solid border-5 border-[#374151]">
+            <div className="h-auto flex-1 p-5 bg-[#1F2937] justify-center items-center border-solid border-2 border-[#374151]">
                <h1 className="text-white text-xl font-[Oswald]">Choose your playground</h1> 
                <div className="flex flex-col h-auto space-y-3 justify-center py-5">
                     {options?.categories?.map((category) => (
-                        <SelectButton
+                        <Button
                             key={category.id}
-                            isSearching = {searching}
+                            isDisabled = {searching}
                             text={category.name}
                             isSelected={selectedCategory === category.id}
                             onToggle={() => {handleToggleCategory(category.id)}}
@@ -143,9 +143,9 @@ function TeamSelectionView({ onQueueStateChange }: TeamSelectionViewProps) {
                <h1 className="text-white text-xl font-[Oswald]">Now, define your role</h1> 
                <div className="flex flex-col h-auto space-y-3 justify-center py-5">
                     {filteredRoles?.map(role => (
-                         <SelectButton
+                         <Button
                             key={role.id}
-                            isSearching = {searching}
+                            isDisabled = {searching}
                             text={role.name}
                             isSelected={selectedRole === role.id}
                             onToggle={() => {
@@ -163,9 +163,9 @@ function TeamSelectionView({ onQueueStateChange }: TeamSelectionViewProps) {
                <h1 className="text-white text-xl font-[Oswald]">Choose your tool</h1> 
                <div className="flex flex-col h-auto space-y-3 justify-center py-5">
                     {filteredTools?.map(tool => (
-                        <SelectButton
+                        <Button
                             key={tool.id}
-                            isSearching = {searching}
+                            isDisabled = {searching}
                             text={tool.name}
                             isSelected={selectedTool?.includes(tool.id) ?? false}
                             onToggle={() => handleToggleTool(tool.id)}
