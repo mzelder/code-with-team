@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { loginUser } from "../../apiClient/auth/auth";
-import { GITHUB_OAUTH_CONFIG } from "../../constants";
+import { OAUTH_CONFIG, OAUTH_URL } from "../../constants";
 import { useNavigate } from "react-router-dom";
 import toast from 'react-hot-toast'
 
@@ -26,8 +26,8 @@ function LoginForm() {
     };
 
     const handleGithubLogin = async () => {
-        const params = new URLSearchParams(GITHUB_OAUTH_CONFIG)
-        const authUrl = `https://github.com/login/oauth/authorize?${params.toString()}`;
+        const params = new URLSearchParams(OAUTH_CONFIG)
+        const authUrl = `${OAUTH_URL}?${params.toString()}`;
         window.location.href = authUrl;
     };
 

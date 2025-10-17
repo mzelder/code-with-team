@@ -74,6 +74,8 @@ namespace api.Services
         
         public async Task<AuthorizedUser> GithubCallbackAsync(GithubCallbackDto dto)
         {
+            if (string.IsNullOrEmpty(dto.Code)) return null;
+
             var clientId = _configuration["GitHub:ClientId"];
             var clientSecret = _configuration["GitHub:ClientSecret"];
 
@@ -99,9 +101,9 @@ namespace api.Services
                     Username = githubUser.Login,
                     Password = Guid.NewGuid().ToString()
                 };
+                _context.Users.Add(existingUser);
+                await _context.SaveChangesAsync();
             }
-            _context.Users.Add(existingUser);
-            await _context.SaveChangesAsync();
 
             return new AuthorizedUser
             {
