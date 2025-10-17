@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using api.Dtos.Auth;
 using api.Dtos;
+using Octokit;
 
 namespace api.Controllers
 {
@@ -16,10 +17,12 @@ namespace api.Controllers
     public class AuthController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public AuthController(AppDbContext context)
+        public AuthController(AppDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         [HttpPost("register")]
@@ -35,7 +38,7 @@ namespace api.Controllers
                 return BadRequest(new ApiResponseDto(false, "Passwords do not match."));
             }
 
-            var user = new User
+            var user = new Models.User
             {
                 Username = dto.Username,
                 Password = dto.Password
@@ -83,6 +86,49 @@ namespace api.Controllers
                 IsAuthenticated = true,
                 User = User.Identity?.Name
             });
+        }
+
+        [HttpPost("github/callback")]
+        public async Task<ActionResult<ApiResponseDto>> GithubCallback([FromBody] GithubCallbackDto dto) 
+        { 
+            var clientId = _configuration["GitHub:ClientId"];
+            var clientSecret = _configuration["GitHub:ClientSecret"];
+
+            var github = new GitHubClient(new ProductHeaderValue("CodeWithTeam"));
+
+            var tokenRequest = new OauthTokenRequest(clientId, clientSecret, dto.Code);
+            var token = await github.Oauth.CreateAccessToken(tokenRequest);
+
+            var authenticatedClient = new GitHubClient(new ProductHeaderValue("CodeWithTeam"))
+            {
+                Credentials = new Credentials(token.AccessToken)
+            };
+
+            var githubUser = await authenticatedClient.User.Current();
+            
+            var existingUser = await _context.Users
+                .FirstOrDefaultAsync(u => u.Username== githubUser.Login);
+
+            if (existingUser == null)
+            {
+                existingUser = new Models.User
+                {
+                    Username = githubUser.Login,
+                    Password = Guid.NewGuid().ToString()
+                };
+                _context.Users.Add(existingUser);
+                await _context.SaveChangesAsync();
+            }
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, existingUser.Username),
+                new Claim(ClaimTypes.NameIdentifier, existingUser.Id.ToString())
+            };
+            var identity = new ClaimsIdentity(claims, "Cookies");
+            await HttpContext.SignInAsync("Cookies", new ClaimsPrincipal(identity));
+
+            return Ok(new ApiResponseDto(true, "GitHub login successful"));
         }
     }
 }

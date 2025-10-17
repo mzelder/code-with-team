@@ -123,8 +123,8 @@ namespace api.Controllers
         [Authorize]
         public async Task<ActionResult<LobbyStatusDto>> WaitForLobby(CancellationToken ct)
         {
-            const int timeoutSeconds = 60;
-            const int pollIntervalMs = 1000;
+            const int timeoutSeconds = 30;
+            const int pollIntervalMs = 500;
             var end = DateTime.UtcNow.AddSeconds(timeoutSeconds);
 
             LobbyStatusDto status = new() { Found = false, LobbyId = null, Members = null };

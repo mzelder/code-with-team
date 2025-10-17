@@ -111,7 +111,7 @@ function RegistrationForm() {
           </div>
         </form>
 
-        <p className="mt-10 text-center text-sm/6 text-gray-400">
+        <p className="mt-10 text-center text-sm/6 text-white">
           Already have an account?{" "}
           <a href="/signin" className="font-semibold text-indigo-400 hover:text-indigo-300">
             Sign in!
