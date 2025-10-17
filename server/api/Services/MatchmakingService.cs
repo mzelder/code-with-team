@@ -157,11 +157,12 @@ namespace api.Services
         public async Task FormLobbiesAsync(CancellationToken ct = default)
         {
             var usersInQueue = await _context.LobbyMembers
-                .Include(lq => lq.UserSelection)
+                .Where(lm => lm.Status == LobbyMember.QueueStatus.InQueue)
+                .Include(lm => lm.UserSelection)
                     .ThenInclude(us => us.Category)
-                .Include(lq => lq.UserSelection)
+                .Include(lm => lm.UserSelection)
                     .ThenInclude(us => us.Role)
-                .Include(lq => lq.User)
+                .Include(lm => lm.User)
                 .ToListAsync(ct);
 
             if (usersInQueue.Count == 0) return;
