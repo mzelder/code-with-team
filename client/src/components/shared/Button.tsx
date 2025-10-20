@@ -6,36 +6,41 @@ interface SelectButtonProps {
     defaultBorderColor?: string;
     selectedColor?: string;
     text: string; 
-    isSelected: boolean,
-    isSearching: boolean,
-    onToggle: () => void;
+    isSelected?: boolean,
+    isDisabled?: boolean,
+    onToggle?: () => void;
+    className?: string;
+    icon?: React.ReactNode;
 }
 
-const SelectButton: React.FC<SelectButtonProps> = ({
+function Button({
     defaultBgColor = "#374151",
     defaultTextColor = "#9CA3AF",
     defaultBorderColor = "black",
     selectedColor = "#00D1FF",
     text,
-    isSelected,
-    isSearching,
+    isSelected = false,
+    isDisabled = false,
     onToggle,
-}) => {
+    className = "",
+    icon
+}: SelectButtonProps) {
     return (
         <button
-            className="rounded border-solid border-1 w-full h-10"
+            className={`rounded border-solid border-1 h-10 flex items-center justify-center gap-3 ${className || 'w-full'}`}
             style={{
-                cursor: isSearching ? "auto" : "pointer",
+                cursor: isDisabled ? "auto" : "pointer",
                 backgroundColor: defaultBgColor,
                 color: isSelected ? selectedColor : defaultTextColor,
                 borderColor: isSelected ? selectedColor : defaultBorderColor
             }}
             onClick={onToggle}
-            disabled={isSearching}
+            disabled={isDisabled}
         >
+            {icon && <span className="flex items-center justify-center">{icon}</span>}
             {text}
         </button>
     )
 }
 
-export default SelectButton;
+export default Button;

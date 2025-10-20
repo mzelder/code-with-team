@@ -17,3 +17,7 @@ export async function logoutUser(): Promise<ApiResponseDto> {
 export async function validateCookies(): Promise<ValidateCookiesResponseDto> {
     return apiGet("/api/Auth/check");
 }
+
+export async function handleGithubCallback(code: string | null): Promise<ApiResponseDto> {
+    return apiPost("/api/Auth/github/callback", { code });
+}

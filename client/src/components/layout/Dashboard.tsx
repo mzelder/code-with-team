@@ -1,13 +1,13 @@
-import { FindTeamForm } from "../matchmaking";
+import { Outlet } from "react-router-dom";
 import SideMenu from "./SideMenu";
 
 function Dashboard() {
     return (
-        <div className="flex h-screen">
+        <div className="flex h-full">
             <SideMenu></SideMenu>
 
-            <div className="flex-1 p-6">
-                <FindTeamForm></FindTeamForm>     
+            <div className="flex-1 h-full">
+                <Outlet />
             </div>
             
         </div>

@@ -69,7 +69,7 @@ namespace api.Data
                 .HasOne(ul => ul.UserSelection)
                 .WithMany(us => us.UserLanguages)
                 .HasForeignKey(ul => ul.UserSelectionId)
-                .OnDelete(DeleteBehavior.Cascade); // cascade from UserSelection → UserLanguages
+                .OnDelete(DeleteBehavior.Cascade); 
 
             modelBuilder.Entity<UserSelection>()
                 .HasOne(us => us.LobbyQueue)
@@ -108,7 +108,13 @@ namespace api.Data
                 new ProgrammingLanguage { Id = 1, Name = "JavaScript", RoleId = 1 },
 
                 // Backend
-                new ProgrammingLanguage { Id = 2, Name = "Python", RoleId = 2 }
+                new ProgrammingLanguage { Id = 2, Name = "Python", RoleId = 2 },
+
+                // QA - same as backend
+                new ProgrammingLanguage { Id = 3, Name = "Python", RoleId = 3 },
+
+                // PM
+                new ProgrammingLanguage { Id = 4, Name = "Standard", RoleId = 4 }
             );
         }
     }

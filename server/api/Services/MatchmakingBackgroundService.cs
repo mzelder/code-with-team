@@ -6,7 +6,7 @@ namespace api.Services.Hosted
     public class MatchmakingBackgroundService : BackgroundService
     {
         private readonly IServiceProvider _serviceProvider;
-        private const int IntervalMs = 5000;
+        private const int IntervalMs = 2000;
 
         public MatchmakingBackgroundService(IServiceProvider serviceProvider)
         {

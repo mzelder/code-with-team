@@ -4,15 +4,15 @@ export interface CategoryResponseDto {
 }
 
 export interface RoleResponseDto {
-    id: number,
-    name: string,
-    categoryId: number
+    id: number;
+    name: string;
+    categoryId: number;
 }
 
 export interface ProgrammingLanguagesResponseDto { 
-    id: number,
-    name: string,
-    RoleId: number
+    id: number;
+    name: string;
+    RoleId: number;
 }
 
 export interface MatchmakingResponseDto {
@@ -23,11 +23,23 @@ export interface MatchmakingResponseDto {
 
 export interface ChoosedOptionsDto {
     categoryId: number;
-    roleId: number,
+    roleId: number;
     programmingLanguageIds: number[];
 }
 
 export interface QueueTimeResponseDto {
-    success: boolean,
-    queueTime: string
+    success: boolean;
+    queueTime: string;
+}
+
+export interface LobbyMemberDto {
+    name: string;
+    category: string;
+    role: string;
+}
+
+export interface LobbyStatusDto {
+    found: boolean;
+    lobbyId: number;
+    members: LobbyMemberDto[];
 }

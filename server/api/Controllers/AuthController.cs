@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using api.Dtos.Auth;
 using api.Dtos;
+using api.Services.Interfaces;
+using api.Extensions;
 
 namespace api.Controllers
 {
@@ -16,53 +18,39 @@ namespace api.Controllers
     public class AuthController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IAuthService _authService;
 
-        public AuthController(AppDbContext context)
+        public AuthController(AppDbContext context, IAuthService authService)
         {
             _context = context;
+            _authService = authService;
         }
 
         [HttpPost("register")]
         public async Task<ActionResult<ApiResponseDto>> Register([FromBody] RegisterDto dto)
         {
-            if (await _context.Users.AnyAsync(u => u.Username == dto.Username))
+            var authorizedUser = await _authService.RegisterAsync(dto);
+            if (authorizedUser == null) 
             {
-                return BadRequest(new ApiResponseDto(false, "Username already exists."));
+               return BadRequest(new ApiResponseDto(false, "Invalid username or password. Please try again."));
             }
 
-            if (dto.Password != dto.ConfirmPassword)
-            {
-                return BadRequest(new ApiResponseDto(false, "Passwords do not match."));
-            }
+            var identity = authorizedUser.ToClaimsIdentity();
+            await HttpContext.SignInAsync("Cookies", new ClaimsPrincipal(identity));
 
-            var user = new User
-            {
-                Username = dto.Username,
-                Password = dto.Password
-            };
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            return Ok(new ApiResponseDto(true, "User registered."));
+            return Ok(new ApiResponseDto(true, "Login successful"));
         }
 
         [HttpPost("login")]
         public async Task<ActionResult<ApiResponseDto>> Login([FromBody] LoginDto dto)
         {
-            var existingUser = await _context.Users.
-                FirstOrDefaultAsync(u => u.Username == dto.Username);
-
-            if (existingUser == null || existingUser.Password != dto.Password)
+            var authorizedUser = await _authService.LoginAsync(dto);
+            if (authorizedUser == null)
             {
-                return Unauthorized(new ApiResponseDto(false, "Invalid username or password"));
+                return BadRequest(new ApiResponseDto(false, "Invalid username or password. Please try again."));
             }
 
-            var claims = new List<Claim> { 
-                new Claim(ClaimTypes.Name, existingUser.Username),
-                new Claim(ClaimTypes.NameIdentifier, existingUser.Id.ToString())
-            };
-            var identity = new ClaimsIdentity(claims, "Cookies");
+            var identity = authorizedUser.ToClaimsIdentity();
             await HttpContext.SignInAsync("Cookies", new ClaimsPrincipal(identity));
 
             return Ok(new ApiResponseDto(true, "Login successful"));
@@ -77,12 +65,27 @@ namespace api.Controllers
 
         [HttpGet("check")]
         [Authorize]
-        public IActionResult CheckAuth()
+        public IActionResult CheckAuthentication()
         {
             return Ok(new {
                 IsAuthenticated = true,
                 User = User.Identity?.Name
             });
+        }
+
+        [HttpPost("github/callback")]
+        public async Task<ActionResult<ApiResponseDto>> GithubCallback([FromBody] GithubCallbackDto dto) 
+        { 
+            var authorizedUser = await _authService.GithubCallbackAsync(dto);
+            if (authorizedUser == null) 
+            {
+               return BadRequest(new ApiResponseDto(false, "GitHub authentication failed. Please try again."));
+            }
+
+            var identity = authorizedUser.ToClaimsIdentity();
+            await HttpContext.SignInAsync("Cookies", new ClaimsPrincipal(identity));
+            
+            return Ok(new ApiResponseDto(true, "Login successful via GitHub"));
         }
     }
 }

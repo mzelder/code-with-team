@@ -1,8 +1,10 @@
 import { Route, Routes, Link } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
-import { LoginPage, RegisterPage, DashboardPage} from './pages'
+import { LoginPage, MainPage, RegisterPage} from './pages'
 import ProtectedRoutes from './utils/ProtectedRoutes'
 import './App.css'
+import MatchmakingContainer from './components/matchmaking/MatchmakingContainer'
+import CallbackPage from './pages/CallbackPage'
 
 function App() {
   return (
@@ -31,12 +33,14 @@ function App() {
             }
         />
             
-            
             <Route path="/signin" element={<LoginPage />} />
             <Route path="/signup" element={<RegisterPage />} />
+            <Route path="/callback/auth" element={<CallbackPage />} />
             
             <Route element={<ProtectedRoutes />}>
-                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/app" element={<MainPage />}>
+                    <Route index element={<MatchmakingContainer />} />
+                </Route>
             </Route>
         </Routes>
     </div>

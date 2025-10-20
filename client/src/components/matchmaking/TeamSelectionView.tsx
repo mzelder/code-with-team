@@ -1,18 +1,26 @@
 import { useEffect, useState } from "react";
 import clsx from "clsx";
-import SelectButton from "./SelectButton";
+import Button from "../shared/Button";
 import { type MatchmakingResponseDto } from "../../apiClient/matchmaking/dtos";
 import { getCurrentTimeInQueue, getMatchmakingOptions, getMatchmakingChoosedOptions, startQueue, stopQueue } from "../../apiClient/matchmaking/matchmaking";
 import toast from "react-hot-toast";
 import StartButton from "./StartButton";
 
-function FindTeamForm() {
+interface TeamSelectionViewProps {
+    onQueueStateChange: (isQueuing: boolean) => void;
+}
+
+function TeamSelectionView({ onQueueStateChange }: TeamSelectionViewProps) {
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
     const [selectedRole, setSelectedRole] = useState<number | null>(null);
     const [selectedTool, setSelectedTool] = useState<number[] | null>(null);
     const [options, setOptions] = useState<MatchmakingResponseDto | null>(null);
     const [searching, setSearching] = useState<boolean>(false);
     const [timeInQueue, setTimeInQueue] = useState<[number, number]>([0, 0]);
+
+    useEffect(() => {
+        onQueueStateChange(searching);
+    }, [searching, onQueueStateChange]);
 
     const handleToggleCategory = (value: number) => setSelectedCategory(value);
     const handleToggleRole = (value: number) => setSelectedRole(value);
@@ -69,7 +77,7 @@ function FindTeamForm() {
             console.log("null's for choosedOptions");
         }
     }
-
+    
     const formatTime = (time: string): [number, number] => {
         const splittedTime = time.split(":");
         const minutes = parseInt(splittedTime[1]);
@@ -91,6 +99,10 @@ function FindTeamForm() {
         fetchOptions();
         fetchTime();
         fetchChoosedOptions();
+    }, []);
+        
+    useEffect(() => {
+        if (!searching) return;
         
         const interval = setInterval(() => {
             setTimeInQueue(([minutes, seconds]) => {
@@ -105,19 +117,18 @@ function FindTeamForm() {
                 return [newMinutes, newSeconds]
             });
         }, 1000);
-
         return () => clearInterval(interval);
-    }, []);
+    }, [searching]);
 
     return (
         <div className="flex flex-row w-full h-auto">
-            <div className="h-auto flex-1 p-5 bg-[#1F2937] justify-center items-center border-solid border-5 border-[#374151]">
+            <div className="h-auto flex-1 p-5 bg-[#1F2937] justify-center items-center border-solid border-2 border-[#374151]">
                <h1 className="text-white text-xl font-[Oswald]">Choose your playground</h1> 
                <div className="flex flex-col h-auto space-y-3 justify-center py-5">
                     {options?.categories?.map((category) => (
-                        <SelectButton
+                        <Button
                             key={category.id}
-                            isSearching = {searching}
+                            isDisabled = {searching}
                             text={category.name}
                             isSelected={selectedCategory === category.id}
                             onToggle={() => {handleToggleCategory(category.id)}}
@@ -132,9 +143,9 @@ function FindTeamForm() {
                <h1 className="text-white text-xl font-[Oswald]">Now, define your role</h1> 
                <div className="flex flex-col h-auto space-y-3 justify-center py-5">
                     {filteredRoles?.map(role => (
-                         <SelectButton
+                         <Button
                             key={role.id}
-                            isSearching = {searching}
+                            isDisabled = {searching}
                             text={role.name}
                             isSelected={selectedRole === role.id}
                             onToggle={() => {
@@ -152,9 +163,9 @@ function FindTeamForm() {
                <h1 className="text-white text-xl font-[Oswald]">Choose your tool</h1> 
                <div className="flex flex-col h-auto space-y-3 justify-center py-5">
                     {filteredTools?.map(tool => (
-                        <SelectButton
+                        <Button
                             key={tool.id}
-                            isSearching = {searching}
+                            isDisabled = {searching}
                             text={tool.name}
                             isSelected={selectedTool?.includes(tool.id) ?? false}
                             onToggle={() => handleToggleTool(tool.id)}
@@ -177,4 +188,4 @@ function FindTeamForm() {
     );
 }
 
-export default FindTeamForm;
+export default TeamSelectionView;
