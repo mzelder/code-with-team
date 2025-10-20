@@ -22,3 +22,5 @@ export const PROD_URL = "https://github.com/login/oauth/authorize";
 export const OAUTH_URL = import.meta.env.VITE_MOCK_AUTH === "true"
     ? MOCK_URL
     : PROD_URL;
+
+export const AVATAR_URL = "https://avatars.githubusercontent.com/";

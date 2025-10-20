@@ -103,10 +103,13 @@ function LobbyComponent({ lobbyData }: LobbyComponentProps) {
 
                         <div className="flex flex-col gap-3">
                             <div className="flex flex-row gap-2 justify-center mt-6">
-                                <UserAvatar width={60} finished={true}/>
-                                <UserAvatar width={60} finished={false}/>
-                                <UserAvatar width={60} finished={false}/>
-                                <UserAvatar width={60} finished={false}/>
+                                {lobbyData?.members.map((user, index) => (
+                                    <UserAvatar 
+                                        width={60}
+                                        userName={user.name}    
+                                        finished={false}
+                                    />
+                                ))}
                             </div>
                             <Button className="flex-1 font-medium text-2xl" text="Finish" defaultBorderColor="white" defaultTextColor="white"/>
                         </div>
