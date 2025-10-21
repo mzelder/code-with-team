@@ -48,6 +48,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<IMatchmakingService, MatchmakingService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IGithubAppService, GithubAppService>();
+builder.Services.AddScoped<IGithubBotService, GithubBotService>();
 builder.Services.AddHostedService<api.Services.Hosted.MatchmakingBackgroundService>();
 
 var app = builder.Build();
