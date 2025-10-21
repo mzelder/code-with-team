@@ -178,10 +178,10 @@ namespace api.Services
 
                     potentialLobbyMembers.Add(user);
 
-                    if (potentialLobbyMembers.Count == 4) break;
+                    if (potentialLobbyMembers.Count == _lobbySize) break;
                 }
 
-                if (potentialLobbyMembers.Count == 4)
+                if (potentialLobbyMembers.Count == _lobbySize)
                 {
                     var lobby = new Lobby
                     {
