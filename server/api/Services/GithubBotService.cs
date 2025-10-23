@@ -18,8 +18,27 @@ namespace api.Services
         {
             var client = await _githubAppService.GetInstallationAccessClientAsync(organizationName);
 
-            var newRepo = new NewRepository(repoName);
+            var newRepo = new NewRepository(repoName)
+            {
+                AutoInit = true,
+            };
             return await client.Repository.Create(organizationName, newRepo);
+        }
+
+        public async Task AddColaboratorAsync(string organizationName, string repoName, string collaboratorUsername)
+        {
+            var client = await _githubAppService.GetInstallationAccessClientAsync(organizationName);
+            await client.Repository.Collaborator.Add(organizationName, repoName, collaboratorUsername);
+        }
+
+        public async Task AcceptInvitationOnBehalfOfUserAsync(string organizationName, string userOAuthToken, int invitationId)
+        {
+            var userClient = new GitHubClient(new ProductHeaderValue(organizationName))
+            {
+                Credentials = new Credentials(userOAuthToken)
+            };
+
+            await userClient.Repository.Invitation.Accept(invitationId);
         }
     }
 }

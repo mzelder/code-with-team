@@ -46,10 +46,12 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddDataProtection();
 builder.Services.AddScoped<IMatchmakingService, MatchmakingService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IGithubAppService, GithubAppService>();
 builder.Services.AddScoped<IGithubBotService, GithubBotService>();
+builder.Services.AddScoped<IGithubUserService, GithubUserService>();
 builder.Services.AddHostedService<api.Services.Hosted.MatchmakingBackgroundService>();
 
 var app = builder.Build();

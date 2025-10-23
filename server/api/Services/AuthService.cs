@@ -5,6 +5,7 @@ using api.Dtos.Matchmaking;
 using api.Models;
 using api.Services.Interfaces;
 using Azure.Identity;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
@@ -20,11 +21,15 @@ namespace api.Services
     {
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly IDataProtector _protector;
 
-        public AuthService(AppDbContext context, IConfiguration configuration)
+        public AuthService(AppDbContext context, 
+            IConfiguration configuration,
+            IDataProtectionProvider dataProtectorProvider)
         {
             _context = context;
             _configuration = configuration;
+            _protector = dataProtectorProvider.CreateProtector("GitHubTokenProtector");
         }
 
         public async Task<AuthorizedUser> RegisterAsync(RegisterDto dto)
@@ -83,6 +88,7 @@ namespace api.Services
 
             var tokenRequest = new OauthTokenRequest(clientId, clientSecret, dto.Code);
             var token = await github.Oauth.CreateAccessToken(tokenRequest);
+            var encryptedToken = _protector.Protect(token.AccessToken);
 
             var authenticatedClient = new GitHubClient(new ProductHeaderValue("CodeWithTeam"))
             {
@@ -99,11 +105,18 @@ namespace api.Services
                 existingUser = new Models.User
                 {
                     Username = githubUser.Login,
-                    Password = Guid.NewGuid().ToString()
+                    Password = Guid.NewGuid().ToString(),
+                    GithubToken = encryptedToken
                 };
                 _context.Users.Add(existingUser);
-                await _context.SaveChangesAsync();
+            } 
+            else
+            {
+                existingUser.GithubToken = encryptedToken;
+                _context.Users.Update(existingUser);
             }
+
+            await _context.SaveChangesAsync();
 
             return new AuthorizedUser
             {

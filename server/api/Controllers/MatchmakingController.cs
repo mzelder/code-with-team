@@ -13,7 +13,7 @@ namespace api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class MatchmakingController : ControllerBase
+    public class MatchmakingController : BaseAuthorizedController
     {
         private readonly AppDbContext _context;
         private readonly IMatchmakingService _matchmakingService;
@@ -22,18 +22,6 @@ namespace api.Controllers
         {
             _context = context;
             _matchmakingService = matchmakingService;
-        }
-
-        private int GetCurrentUserId()
-        {
-            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-
-            if (userIdClaim == null)
-            {
-                throw new UnauthorizedAccessException("User ID not found in claims");
-            }
-
-            return int.Parse(userIdClaim.Value);
         }
 
         [HttpGet("get-options")]
