@@ -1,4 +1,5 @@
 ﻿using api.Services.Interfaces;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using Octokit;
 
 namespace api.Services
@@ -47,6 +48,33 @@ namespace api.Services
             var client = await _githubAppService.GetInstallationAccessClientAsync(organizationName);
             var permision = new CollaboratorRequest("push");
             await client.Repository.Collaborator.Add(organizationName, repoName, collaboratorUsername, permision);
+        }
+
+        public async Task SetBranchRulesAsync(string organizationName, string repoName, string branch="main")
+        {
+            var client = await _githubAppService.GetInstallationAccessClientAsync(organizationName);
+            var pullRequestReviews = new BranchProtectionRequiredReviewsUpdate(
+                requiredApprovingReviewCount: 2,
+                dismissStaleReviews: true,
+                requireCodeOwnerReviews: false,
+                requireLastPushApproval: false,
+                dismissalRestrictions: new BranchProtectionRequiredReviewsDismissalRestrictionsUpdate(false)
+            );
+            var branchProtection = new BranchProtectionSettingsUpdate(
+                requiredStatusChecks: null,
+                requiredPullRequestReviews: pullRequestReviews,
+                restrictions: null,
+                requiredLinearHistory: false,
+                allowForcePushes: null,
+                allowDeletions: false,
+                blockCreations: false,
+                requiredConversationResolution: true,
+                requiredSignatures: false,
+                enforceAdmins: false
+            );
+
+            await client.Repository.Branch.UpdateBranchProtection(organizationName, repoName, branch, branchProtection);
+
         }
     }
 }

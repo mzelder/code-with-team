@@ -64,5 +64,19 @@ namespace api.Controllers
                 return BadRequest(new ApiResponseDto(false, $"Failed to accept invitations: {ex.Message}"));
             }
         }
+
+        [HttpPost("set-branch-rules")]
+        public async Task<IActionResult> SetBranchRules([FromQuery] string repoName)
+        {
+            try
+            {
+                await _githubBotService.SetBranchRulesAsync(_organizationName, repoName);
+                return Ok(new ApiResponseDto(true, "Branch rules have been set successfully"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponseDto(false, $"Failed to set branch rules: {ex.Message}"));
+            }
+        }
     }
 }
