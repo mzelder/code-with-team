@@ -25,20 +25,27 @@ namespace api.Services
             return await client.Repository.Create(organizationName, newRepo);
         }
 
+        public async Task<Repository> CreateRepositoryFromTemplateAsync(string organizationName, string repoName)
+        {
+            var templateRepoName = _configuration["Github:TemplateRepoName"];
+            if (string.IsNullOrEmpty(templateRepoName))
+            {
+                throw new InvalidOperationException("Template repository name is not configured.");
+            }
+
+            var client = await _githubAppService.GetInstallationAccessClientAsync(organizationName);
+            var newRepo = new NewRepositoryFromTemplate(repoName)
+            {
+                Owner = organizationName
+            };
+
+            return await client.Repository.Generate(organizationName, templateRepoName, newRepo);
+        }
+
         public async Task AddColaboratorAsync(string organizationName, string repoName, string collaboratorUsername)
         {
             var client = await _githubAppService.GetInstallationAccessClientAsync(organizationName);
             await client.Repository.Collaborator.Add(organizationName, repoName, collaboratorUsername);
-        }
-
-        public async Task AcceptInvitationOnBehalfOfUserAsync(string organizationName, string userOAuthToken, int invitationId)
-        {
-            var userClient = new GitHubClient(new ProductHeaderValue(organizationName))
-            {
-                Credentials = new Credentials(userOAuthToken)
-            };
-
-            await userClient.Repository.Invitation.Accept(invitationId);
         }
     }
 }

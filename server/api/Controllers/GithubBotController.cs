@@ -29,6 +29,13 @@ namespace api.Controllers
             var repository = await _githubBotService.CreateRepositoryAsync(_organizationName, repoName);
             return Ok(repository);
         }
+        
+        [HttpPost("create-repo-from-template")]
+        public async Task<IActionResult> CreateRepositoryFromTemplateAsync([FromQuery] string repoName)
+        {
+            var repository = await _githubBotService.CreateRepositoryFromTemplateAsync(_organizationName, repoName);
+            return Ok(repository);
+        }
 
         [HttpPost("add-collaborator")]
         public async Task<IActionResult> AddCollaborator([FromQuery] string repoName, [FromQuery] string collaboratorUsername)
