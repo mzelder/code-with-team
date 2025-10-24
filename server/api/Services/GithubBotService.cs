@@ -45,7 +45,8 @@ namespace api.Services
         public async Task AddColaboratorAsync(string organizationName, string repoName, string collaboratorUsername)
         {
             var client = await _githubAppService.GetInstallationAccessClientAsync(organizationName);
-            await client.Repository.Collaborator.Add(organizationName, repoName, collaboratorUsername);
+            var permision = new CollaboratorRequest("push");
+            await client.Repository.Collaborator.Add(organizationName, repoName, collaboratorUsername, permision);
         }
     }
 }
