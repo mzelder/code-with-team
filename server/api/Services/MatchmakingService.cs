@@ -154,6 +154,13 @@ namespace api.Services
             };
         }
 
+        public async Task<Lobby> GetFirstLobbyWithoutRepositoryUrl(CancellationToken ct = default)
+        {
+            return await _context.Lobbies
+                .Where(l => l.RepositoryUrl == null)
+                .FirstOrDefaultAsync(ct);
+        }
+
         public async Task FormLobbiesAsync(CancellationToken ct = default)
         {
             var usersInQueue = await _context.LobbyMembers

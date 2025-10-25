@@ -52,6 +52,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IGithubAppService, GithubAppService>();
 builder.Services.AddScoped<IGithubBotService, GithubBotService>();
 builder.Services.AddScoped<IGithubUserService, GithubUserService>();
+builder.Services.AddScoped<ITeamRepositoryService, TeamRepositoryService>();
 builder.Services.AddHostedService<api.Services.Hosted.MatchmakingBackgroundService>();
 
 var app = builder.Build();

@@ -74,7 +74,6 @@ namespace api.Services
             );
 
             await client.Repository.Branch.UpdateBranchProtection(organizationName, repoName, branch, branchProtection);
-
         }
     }
 }
