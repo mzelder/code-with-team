@@ -47,7 +47,7 @@ function LoginForm() {
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="email" className="block text-sm/6 font-medium text-gray-100">
+            <label htmlFor="username" className="block text-sm/6 font-medium text-gray-100">
               Username
             </label>
             <div className="mt-2">

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import type { LobbyStatusDto } from "../../apiClient/matchmaking/dtos";
 import Button from "../shared/Button";
 import CheckBox from "../shared/CheckBox";
@@ -9,6 +10,17 @@ interface LobbyComponentProps {
 }
 
 function LobbyComponent({ lobbyData }: LobbyComponentProps) {
+    const [repoUrl, setRepoUrl] = useState<string | null>(null);
+    
+    useEffect(() => {
+        setRepoUrl(lobbyData?.repositoryUrl ?? null);
+    }, [lobbyData]);
+    
+    const onClickRepositoryButton = () => {
+        const repoUrl = lobbyData!.repositoryUrl;
+        window.open(repoUrl, "_blank", "noopener,noreferrer");
+    }
+    
     return (
         <div className="flex flex-row w-full h-screen">
             <div className="flex flex-col p-4 items-center h-full justify-between border-solid border-r-4 border-[#374151]">
@@ -87,7 +99,12 @@ function LobbyComponent({ lobbyData }: LobbyComponentProps) {
                         </div>
                         
                         <div className="flex flex-col gap-6">
-                            <Button className="flex-1 font-medium text-2xl" text="Go to GitHub" isDisabled={true} isSelected={true}/>
+                            <Button className="flex-1 font-medium text-2xl" 
+                                    text="Go to your repository"
+                                    onToggle={() => onClickRepositoryButton()}
+                                    isDisabled={!repoUrl} 
+                                    isSelected={true}
+                            />
                             <Button 
                                 className="flex-1 font-medium text-2xl" 
                                 text="Team call" 

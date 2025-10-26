@@ -122,13 +122,18 @@ namespace api.Services
                  .Select(lm => (int?)lm.LobbyId)
                  .FirstOrDefaultAsync(ct);
 
+            var lobby = await _context.Lobbies
+                .Where(l => l.Id == lobbyId)
+                .FirstOrDefaultAsync(ct);
+
             if (lobbyId == null)
             {
                 return new LobbyStatusDto
                 {
                     Found = false,
                     LobbyId = null,
-                    Members = null
+                    Members = null,
+                    RepositoryUrl = null
                 };
             }
 
@@ -150,7 +155,8 @@ namespace api.Services
                     Name = m.User.Username,
                     Category = m.UserSelection.Category.Name,
                     Role = m.UserSelection.Role.Name
-                }).ToList()
+                }).ToList(),
+                RepositoryUrl = lobby?.RepositoryUrl
             };
         }
 

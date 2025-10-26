@@ -114,19 +114,17 @@ namespace api.Controllers
             const int timeoutSeconds = 30;
             const int pollIntervalMs = 500;
             var end = DateTime.UtcNow.AddSeconds(timeoutSeconds);
+            LobbyStatusDto result;
 
-            LobbyStatusDto status = new() { Found = false, LobbyId = null, Members = null };
-
-            while (DateTime.UtcNow < end && !ct.IsCancellationRequested)
+            do
             {
-                status = await _matchmakingService.GetLobbyStatusAsync(GetCurrentUserId(), ct);
-
-                if (status.Found) return Ok(status);
-
+                result = await _matchmakingService.GetLobbyStatusAsync(GetCurrentUserId(), ct);
+                if (result.Found) return Ok(result);
                 await Task.Delay(pollIntervalMs, ct);
-            }
 
-            return StatusCode(408, status);
+            } while (DateTime.UtcNow < end && !ct.IsCancellationRequested);
+
+            return StatusCode(408, result);
         }
     }
 }
