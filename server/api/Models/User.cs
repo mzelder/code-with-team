@@ -13,6 +13,8 @@ namespace api.Models
         [Required]
         public string Password { get; set; }
 
+        public string? GithubToken { get; set; }
+
         public DateTime CreatedAt { get; set; }
 
         public ICollection<UserSelection> UserSelections { get; set; }

@@ -42,4 +42,5 @@ export interface LobbyStatusDto {
     found: boolean;
     lobbyId: number;
     members: LobbyMemberDto[];
+    repositoryUrl: string;
 }

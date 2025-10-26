@@ -122,13 +122,18 @@ namespace api.Services
                  .Select(lm => (int?)lm.LobbyId)
                  .FirstOrDefaultAsync(ct);
 
+            var lobby = await _context.Lobbies
+                .Where(l => l.Id == lobbyId)
+                .FirstOrDefaultAsync(ct);
+
             if (lobbyId == null)
             {
                 return new LobbyStatusDto
                 {
                     Found = false,
                     LobbyId = null,
-                    Members = null
+                    Members = null,
+                    RepositoryUrl = null
                 };
             }
 
@@ -150,8 +155,16 @@ namespace api.Services
                     Name = m.User.Username,
                     Category = m.UserSelection.Category.Name,
                     Role = m.UserSelection.Role.Name
-                }).ToList()
+                }).ToList(),
+                RepositoryUrl = lobby?.RepositoryUrl
             };
+        }
+
+        public async Task<Lobby> GetFirstLobbyWithoutRepositoryUrl(CancellationToken ct = default)
+        {
+            return await _context.Lobbies
+                .Where(l => l.RepositoryUrl == null)
+                .FirstOrDefaultAsync(ct);
         }
 
         public async Task FormLobbiesAsync(CancellationToken ct = default)
@@ -178,10 +191,10 @@ namespace api.Services
 
                     potentialLobbyMembers.Add(user);
 
-                    if (potentialLobbyMembers.Count == 4) break;
+                    if (potentialLobbyMembers.Count == _lobbySize) break;
                 }
 
-                if (potentialLobbyMembers.Count == 4)
+                if (potentialLobbyMembers.Count == _lobbySize)
                 {
                     var lobby = new Lobby
                     {

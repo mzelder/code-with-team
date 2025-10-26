@@ -13,7 +13,7 @@ namespace api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class MatchmakingController : ControllerBase
+    public class MatchmakingController : BaseAuthorizedController
     {
         private readonly AppDbContext _context;
         private readonly IMatchmakingService _matchmakingService;
@@ -22,18 +22,6 @@ namespace api.Controllers
         {
             _context = context;
             _matchmakingService = matchmakingService;
-        }
-
-        private int GetCurrentUserId()
-        {
-            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-
-            if (userIdClaim == null)
-            {
-                throw new UnauthorizedAccessException("User ID not found in claims");
-            }
-
-            return int.Parse(userIdClaim.Value);
         }
 
         [HttpGet("get-options")]
@@ -126,19 +114,17 @@ namespace api.Controllers
             const int timeoutSeconds = 30;
             const int pollIntervalMs = 500;
             var end = DateTime.UtcNow.AddSeconds(timeoutSeconds);
+            LobbyStatusDto result;
 
-            LobbyStatusDto status = new() { Found = false, LobbyId = null, Members = null };
-
-            while (DateTime.UtcNow < end && !ct.IsCancellationRequested)
+            do
             {
-                status = await _matchmakingService.GetLobbyStatusAsync(GetCurrentUserId(), ct);
-
-                if (status.Found) return Ok(status);
-
+                result = await _matchmakingService.GetLobbyStatusAsync(GetCurrentUserId(), ct);
+                if (result.Found) return Ok(result);
                 await Task.Delay(pollIntervalMs, ct);
-            }
 
-            return StatusCode(408, status);
+            } while (DateTime.UtcNow < end && !ct.IsCancellationRequested);
+
+            return StatusCode(408, result);
         }
     }
 }

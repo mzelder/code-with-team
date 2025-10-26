@@ -1,14 +1,14 @@
 export const OAUTH_PROD_CONFIG = {
     client_id: import.meta.env.VITE_GITHUB_CLIENT_ID,
     redirect_uri: `${window.location.origin}/callback/auth`,
-    scope: "user:email",
+    scope: "repo",
     response_type: "code"
 };
 
 export const OAUTH_MOCK_CONFIG = {
     client_id: "test-client-id",
     redirect_uri: `${window.location.origin}/callback/auth`,
-    scope: "user:email",
+    scope: "repo",
     response_type: "code"
 }
 

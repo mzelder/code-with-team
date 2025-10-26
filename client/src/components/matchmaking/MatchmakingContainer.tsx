@@ -15,11 +15,12 @@ function MatchmakingContainer() {
     const [matchmakingState, setMatchmakingState] = useState<MatchmakingState>(MatchmakingState.Canceled);
     const [lobbyData, setLobbyData] = useState<LobbyStatusDto | null>(null);
 
+    // this will be happening till lobby will create
     const checkLobbyStatus = async () => {
         try {
             const lobbyStatus = await getLobbyStatus();
 
-            if (!lobbyStatus.found) {
+            if (!lobbyStatus.found || !lobbyStatus.repositoryUrl) {
                 setMatchmakingState(MatchmakingState.Canceled);
                 setLobbyData(null);
                 return;

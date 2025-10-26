@@ -1,14 +1,30 @@
+import { useEffect, useState } from "react";
 import type { LobbyStatusDto } from "../../apiClient/matchmaking/dtos";
 import Button from "../shared/Button";
 import CheckBox from "../shared/CheckBox";
 import UserAvatar from "../shared/UserAvatar";
 import UserCard from "./UserCard";
+import { useReadme } from "../../hooks/useReadme";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm"
 
 interface LobbyComponentProps {
     lobbyData: LobbyStatusDto | null;
 }
 
 function LobbyComponent({ lobbyData }: LobbyComponentProps) {
+    const [repoUrl, setRepoUrl] = useState<string | null>(null);
+    const repoReadme = useReadme(repoUrl);
+    
+    useEffect(() => {
+        setRepoUrl(lobbyData?.repositoryUrl ?? null);
+    }, [lobbyData]);
+    
+    const onClickRepositoryButton = () => {
+        const repoUrl = lobbyData!.repositoryUrl;
+        window.open(repoUrl, "_blank", "noopener,noreferrer");
+    }
+    
     return (
         <div className="flex flex-row w-full h-screen">
             <div className="flex flex-col p-4 items-center h-full justify-between border-solid border-r-4 border-[#374151]">
@@ -36,33 +52,10 @@ function LobbyComponent({ lobbyData }: LobbyComponentProps) {
                 </div>
                 
                 <div className="flex flex-col w-full h-full p-6">
-                    <div className="mb-6 p-8 px-18 bg-[#374151] border-solid border-1 border-white rounded-md space-y-4 text-white leading-relaxed text-xl">
-                        <p>
-                            Welcome to BrightPixel Studio — a young, dynamic software house that has just signed a contract with a promising new startup called NeuroLink.
-                        </p>
-                        
-                        <p>
-                            NeuroLink is developing an innovative AI tool that helps developers write and test code faster. The product has huge potential, but there's one small problem — they don't have a website yet, and their product launch is just one week away.
-                        </p>
-                        
-                        <div>
-                            <p className="mb-2">Your team has been assigned to create a Landing Page that will:</p>
-                            <ul className="list-disc list-inside space-y-1 ml-4">
-                                <li>Present the product in a clear and appealing way,</li>
-                                <li>Encourage users to join the waiting list,</li>
-                                <li>Reflect the startup's modern, AI-driven character,</li>
-                                <li>And be ready under tight deadlines.</li>
-                            </ul>
+                    <div className="flex flex-col items-start overflow-auto mb-6 p-8 px-18 bg-[#374151] border-solid border-1 border-white rounded-md space-y-4 text-white leading-relaxed text-xl">
+                        <div className="prose prose-invert prose-2xl">
+                            <Markdown remarkPlugins={[remarkGfm]}>{repoReadme}</Markdown>
                         </div>
-                        
-                        <p>
-                            The client has only provided a logo, a few app screenshots, and a short tagline:<br />
-                            <span className="font-semibold">"Code Smarter. Build Faster."</span>
-                        </p>
-                        
-                        <p>
-                            Everything else is up to you — it's your job to design, plan, and build a landing page that will impress both first-time users and potential investors.
-                        </p>
                     </div>
                     
                     <div className="grid grid-cols-3 gap-6">
@@ -87,7 +80,12 @@ function LobbyComponent({ lobbyData }: LobbyComponentProps) {
                         </div>
                         
                         <div className="flex flex-col gap-6">
-                            <Button className="flex-1 font-medium text-2xl" text="Go to GitHub" isDisabled={true} isSelected={true}/>
+                            <Button className="flex-1 font-medium text-2xl" 
+                                    text="Go to your repository"
+                                    onToggle={() => onClickRepositoryButton()}
+                                    isDisabled={!repoUrl} 
+                                    isSelected={true}
+                            />
                             <Button 
                                 className="flex-1 font-medium text-2xl" 
                                 text="Team call" 

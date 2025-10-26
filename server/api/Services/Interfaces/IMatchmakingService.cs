@@ -11,6 +11,7 @@ namespace api.Services.Interfaces
         Task<QueueTimeDto> GetQueueTimeAsync(int userId);
         Task<ChoosedOptionsDto> GetChoosedOptionsAsync(int userId);
         Task<LobbyStatusDto> GetLobbyStatusAsync(int userId, CancellationToken ct = default);
+        Task<Lobby> GetFirstLobbyWithoutRepositoryUrl(CancellationToken ct = default);
         Task FormLobbiesAsync(CancellationToken ct = default);
     }
 }

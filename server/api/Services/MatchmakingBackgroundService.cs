@@ -1,5 +1,6 @@
 ﻿using api.Services.Interfaces;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Identity.Client;
 
 namespace api.Services.Hosted
 {
@@ -20,12 +21,20 @@ namespace api.Services.Hosted
                 try
                 {
                     using var scope = _serviceProvider.CreateScope();
-                    var matchmaking = scope.ServiceProvider.GetRequiredService<IMatchmakingService>();
-                    await matchmaking.FormLobbiesAsync(stoppingToken);
+                    var matchmakingService = scope.ServiceProvider.GetRequiredService<IMatchmakingService>();
+                    var teamRepositoryService = scope.ServiceProvider.GetRequiredService<ITeamRepositoryService>();
+
+                    await matchmakingService.FormLobbiesAsync(stoppingToken);
+
+                    var lobbyWithoutUrl = await matchmakingService.GetFirstLobbyWithoutRepositoryUrl(stoppingToken);
+                    if (lobbyWithoutUrl != null)
+                    {
+                        await teamRepositoryService.SetupTeamRepositoryAsync(lobbyWithoutUrl.Id ,stoppingToken);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex);
+                    throw new Exception("Background task error: " + ex.Message);
                 }
 
                 await Task.Delay(IntervalMs, stoppingToken);
