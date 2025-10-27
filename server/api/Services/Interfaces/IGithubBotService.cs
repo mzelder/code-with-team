@@ -8,5 +8,6 @@ namespace api.Services.Interfaces
         Task<Repository> CreateRepositoryFromTemplateAsync(string organizationName, string repoName);
         Task AddColaboratorAsync(string organizationName, string repoName, string collaboratorUsername);
         Task SetBranchRulesAsync(string organizationName, string repoName, string branch = "main");
+        Task CreateProjectAsync(Repository repository, string organizationName, string projectName);
     }
 }

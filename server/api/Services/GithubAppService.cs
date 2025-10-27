@@ -1,5 +1,6 @@
 ﻿using api.Services.Interfaces;
 using Octokit;
+using GraphQL = Octokit.GraphQL;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
@@ -85,6 +86,15 @@ namespace api.Services
                 Credentials = new Credentials(response.Token)
             };
 
+            return authenticatedClient;
+        }
+
+        public async Task<GraphQL.Connection> GetGraphQLConnection(string organizationName)
+        {
+            var restClient = await GetInstallationAccessClientAsync(organizationName);
+            var token = restClient.Credentials.GetToken();
+
+            var authenticatedClient = new GraphQL.Connection(new GraphQL.ProductHeaderValue(organizationName), token);
             return authenticatedClient;
         }
     }

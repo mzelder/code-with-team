@@ -1,6 +1,7 @@
 ﻿using api.Services.Interfaces;
-using Microsoft.EntityFrameworkCore.Query.Internal;
 using Octokit;
+using Octokit.GraphQL;
+using GraphQL = Octokit.GraphQL;
 
 namespace api.Services
 {
@@ -50,7 +51,7 @@ namespace api.Services
             await client.Repository.Collaborator.Add(organizationName, repoName, collaboratorUsername, permision);
         }
 
-        public async Task SetBranchRulesAsync(string organizationName, string repoName, string branch="main")
+        public async Task SetBranchRulesAsync(string organizationName, string repoName, string branch = "main")
         {
             var client = await _githubAppService.GetInstallationAccessClientAsync(organizationName);
             var pullRequestReviews = new BranchProtectionRequiredReviewsUpdate(
@@ -74,6 +75,28 @@ namespace api.Services
             );
 
             await client.Repository.Branch.UpdateBranchProtection(organizationName, repoName, branch, branchProtection);
+        }
+
+        public async Task CreateProjectAsync(Repository repository, string organizationName, string projectName)
+        {
+            var connection = await _githubAppService.GetGraphQLConnection(organizationName);
+
+            // add team members to project
+            var mutation = new Mutation()
+                .CreateProjectV2(new GraphQL.Model.CreateProjectV2Input
+                {
+                    OwnerId = new ID(repository.Owner.NodeId),
+                    Title = projectName,
+                    RepositoryId = new ID(repository.NodeId)
+                })
+
+                .Select(p => new
+                {
+                    p.ProjectV2.Id,
+                    p.ProjectV2.Url
+                }).Compile();   
+
+            var result = await connection.Run(mutation);
         }
     }
 }
