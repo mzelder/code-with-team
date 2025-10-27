@@ -78,5 +78,20 @@ namespace api.Controllers
                 return BadRequest(new ApiResponseDto(false, $"Failed to set branch rules: {ex.Message}"));
             }
         }
+
+        [HttpPost("create-project-for-repo")]
+        public async Task<IActionResult> CreateProjectForRepository([FromQuery] string repoName, [FromQuery] int repositoryId)
+        {
+            try
+            {
+                var repo = await _githubBotService.CreateRepositoryAsync(_organizationName, repoName);
+                await _githubBotService.CreateProjectAsync(repo, _organizationName, repoName);
+                return Ok(new ApiResponseDto(true, "Project have been created"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponseDto(false, $"Failed to create project: {ex.Message}"));
+            }
+        }
     }
 }
