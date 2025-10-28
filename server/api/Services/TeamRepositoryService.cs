@@ -62,13 +62,26 @@ namespace api.Services
                 // Set branch protection rules
                 await _githubBotService.SetBranchRulesAsync(_organizationName, repository.Name);
 
-                // Add collaborators
+                // Create project for repository
+                var project = await _githubBotService.CreateProjectAsync(
+                    repository,
+                    _organizationName,
+                    repository.Name
+                );
+
+                // Add collaborators to reposisotry and project
                 foreach (var user in users)
                 {
-                    await _githubBotService.AddColaboratorAsync(
+                    await _githubBotService.AddColaboratorToRepoAsync(
                         _organizationName,
                         repository.Name,
                         user.Username
+                    );
+
+                    await _githubBotService.AddColaboratorToProjectAsync(
+                        repository,
+                        project,
+                        _organizationName
                     );
 
                     await _githubUserService.AcceptRepositoryInvitationAsync(
