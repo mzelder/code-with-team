@@ -15,8 +15,17 @@ namespace api.Controllers
         private readonly IConfiguration _configuration;
         private readonly string _organizationName;
 
-        public GithubBotController(IGithubBotService githubBotService, IGithubUserService githubUserService,IConfiguration configuration)
+        public GithubBotController(IGithubBotService githubBotService, 
+            IGithubUserService githubUserService, 
+            IConfiguration configuration,
+            IHostEnvironment env)
         {
+            if (!env.IsDevelopment())
+            {
+                throw new InvalidOperationException
+                    ("GithubBotContoller can only be used in Development environment.");
+            }
+            
             _githubBotService = githubBotService;
             _githubUserService = githubUserService;
             _configuration = configuration;
@@ -29,7 +38,7 @@ namespace api.Controllers
             var repository = await _githubBotService.CreateRepositoryAsync(_organizationName, repoName);
             return Ok(repository);
         }
-        
+
         [HttpPost("create-repo-from-template")]
         public async Task<IActionResult> CreateRepositoryFromTemplateAsync([FromQuery] string repoName)
         {
@@ -37,14 +46,14 @@ namespace api.Controllers
             return Ok(repository);
         }
 
-        [HttpPost("add-collaborator")]
-        public async Task<IActionResult> AddCollaborator([FromQuery] string repoName, [FromQuery] string collaboratorUsername)
+        [HttpPost("add-collaborator-to-repo")]
+        public async Task<IActionResult> AddCollaboratorToRepo([FromQuery] string repoName, [FromQuery] string collaboratorUsername)
         {
             try
             {
-                await _githubBotService.AddColaboratorAsync(_organizationName, repoName, collaboratorUsername);
+                await _githubBotService.AddColaboratorToRepoAsync(_organizationName, repoName, collaboratorUsername);
                 return Ok(new ApiResponseDto(true, "Colaborator have been added successfully"));
-            } 
+            }
             catch (Exception ex)
             {
                 return BadRequest(new ApiResponseDto(false, $"Failed to add collaborator: {ex.Message}"));
@@ -86,6 +95,28 @@ namespace api.Controllers
             {
                 var repo = await _githubBotService.CreateRepositoryAsync(_organizationName, repoName);
                 await _githubBotService.CreateProjectAsync(repo, _organizationName, repoName);
+                return Ok(new ApiResponseDto(true, "Project have been created"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponseDto(false, $"Failed to create project: {ex.Message}"));
+            }
+        }
+
+        [HttpPost("add-collaborator-to-project")]
+        public async Task<IActionResult> AddCollaboratorToProject([FromQuery] string repoName)
+        {
+            try
+            {
+                // create repo
+                var repo = await _githubBotService.CreateRepositoryAsync(_organizationName, repoName);
+                
+                // create project for the repo
+                var project = await _githubBotService.CreateProjectAsync(repo, _organizationName, repoName);
+
+                // add collabs to project
+                await _githubBotService.AddColaboratorToProjectAsync(repo, project, _organizationName);
+
                 return Ok(new ApiResponseDto(true, "Project have been created"));
             }
             catch (Exception ex)
