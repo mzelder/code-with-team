@@ -10,26 +10,32 @@ namespace api.Services
     public class GithubBotService : IGithubBotService
     {
         private readonly IGithubAppService _githubAppService;
+        private readonly IGithubUserService _githubUserService;
         private readonly IConfiguration _configuration;
+        private readonly string _organizationName;
 
-        public GithubBotService(IGithubAppService githubAppService, IConfiguration configuration)
+        public GithubBotService(IGithubAppService githubAppService, 
+            IGithubUserService githubUserService,
+            IConfiguration configuration)
         {
             _githubAppService = githubAppService;
+            _githubUserService = githubUserService;
             _configuration = configuration;
+            _organizationName = configuration["Github:OrganizationName"];
         }
 
-        public async Task<Repository> CreateRepositoryAsync(string organizationName, string repoName)
+        public async Task<Repository> CreateRepositoryAsync(string repoName)
         {
-            var client = await _githubAppService.GetInstallationAccessClientAsync(organizationName);
+            var client = await _githubAppService.GetInstallationAccessClientAsync();
 
             var newRepo = new NewRepository(repoName)
             {
                 AutoInit = true,
             };
-            return await client.Repository.Create(organizationName, newRepo);
+            return await client.Repository.Create(_organizationName, newRepo);
         }
 
-        public async Task<Repository> CreateRepositoryFromTemplateAsync(string organizationName, string repoName)
+        public async Task<Repository> CreateRepositoryFromTemplateAsync(string repoName)
         {
             var templateRepoName = _configuration["Github:TemplateRepoName"];
             if (string.IsNullOrEmpty(templateRepoName))
@@ -37,25 +43,25 @@ namespace api.Services
                 throw new InvalidOperationException("Template repository name is not configured.");
             }
 
-            var client = await _githubAppService.GetInstallationAccessClientAsync(organizationName);
+            var client = await _githubAppService.GetInstallationAccessClientAsync();
             var newRepo = new NewRepositoryFromTemplate(repoName)
             {
-                Owner = organizationName
+                Owner = _organizationName
             };
 
-            return await client.Repository.Generate(organizationName, templateRepoName, newRepo);
+            return await client.Repository.Generate(_organizationName, templateRepoName, newRepo);
         }
 
-        public async Task AddColaboratorToRepoAsync(string organizationName, string repoName, string collaboratorUsername)
+        public async Task AddColaboratorToRepoAsync(string repoName, string collaboratorUsername)
         {
-            var client = await _githubAppService.GetInstallationAccessClientAsync(organizationName);
+            var client = await _githubAppService.GetInstallationAccessClientAsync();
             var permision = new CollaboratorRequest("push");
-            await client.Repository.Collaborator.Add(organizationName, repoName, collaboratorUsername, permision);
+            await client.Repository.Collaborator.Add(_organizationName, repoName, collaboratorUsername, permision);
         }
 
-        public async Task SetBranchRulesAsync(string organizationName, string repoName, string branch = "main")
+        public async Task SetBranchRulesAsync(string repoName, string branch = "main")
         {
-            var client = await _githubAppService.GetInstallationAccessClientAsync(organizationName);
+            var client = await _githubAppService.GetInstallationAccessClientAsync();
             var pullRequestReviews = new BranchProtectionRequiredReviewsUpdate(
                 requiredApprovingReviewCount: 2,
                 dismissStaleReviews: true,
@@ -76,12 +82,12 @@ namespace api.Services
                 enforceAdmins: false
             );
 
-            await client.Repository.Branch.UpdateBranchProtection(organizationName, repoName, branch, branchProtection);
+            await client.Repository.Branch.UpdateBranchProtection(_organizationName, repoName, branch, branchProtection);
         }
 
-        public async Task<ProjectResult> CreateProjectAsync(Repository repository, string organizationName, string projectName)
+        public async Task<ProjectResult> CreateProjectAsync(Repository repository, string projectName)
         {
-            var connection = await _githubAppService.GetGraphQLConnection(organizationName);
+            var connection = await _githubAppService.GetGraphQLConnection();
             var mutation = new Mutation()
                 .CreateProjectV2(new GraphQL.Model.CreateProjectV2Input
                 {
@@ -104,31 +110,21 @@ namespace api.Services
             };
         }
 
-        public async Task AddColaboratorToProjectAsync(Repository repository, ProjectResult project, string organizationName)
+        public async Task AddColaboratorToProjectAsync(ProjectResult project, int userId)
         {
-            var client = await _githubAppService.GetInstallationAccessClientAsync(organizationName);
-            var connection = await _githubAppService.GetGraphQLConnection(organizationName);
+            var connection = await _githubAppService.GetGraphQLConnection();
 
-            var reopCollaborators = await client.Repository.Collaborator.GetAll(repository.Owner.Login, repository.Name);
-
-            var role = GraphQL.Model.ProjectV2Roles.Writer;
-            var projectCollaborators = new List<GraphQL.Model.ProjectV2Collaborator>();
-            
-            foreach (var collaborator in reopCollaborators)
+            var projectCollaborator = new GraphQL.Model.ProjectV2Collaborator
             {
-                var userId = new ID(collaborator.NodeId);
-                projectCollaborators.Add(new GraphQL.Model.ProjectV2Collaborator
-                {
-                    UserId = userId,
-                    Role = role
-                });
-            }
-
+                UserId = new ID(await _githubUserService.GetUserNodeIDAsync(userId)),
+                Role = GraphQL.Model.ProjectV2Roles.Writer
+            };
+            
             var mutation = new Mutation()
                 .UpdateProjectV2Collaborators(new GraphQL.Model.UpdateProjectV2CollaboratorsInput
                 {
                     ProjectId = project.Id,
-                    Collaborators = projectCollaborators
+                    Collaborators = [projectCollaborator]
                 })
                 .Select(p => p.ClientMutationId);
 

@@ -5,8 +5,8 @@ namespace api.Services.Interfaces
 {
     public interface IGithubAppService
     {
-        Task<GitHubClient> GetInstallationAccessClientAsync(string organizationName);
-        Task<int> GetInstalationAsync(string organizationName, string jwt);
-        Task<GraphQL.Connection> GetGraphQLConnection(string organizationName);
+        Task<GitHubClient> GetInstallationAccessClientAsync();
+        Task<int> GetInstalationAsync(string jwt);
+        Task<GraphQL.Connection> GetGraphQLConnection();
     }
 }

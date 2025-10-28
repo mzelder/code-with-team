@@ -10,10 +10,12 @@ namespace api.Services
     public class GithubAppService : IGithubAppService
     {
         private readonly IConfiguration _configuration;
+        private readonly string _organizationName;
 
         public GithubAppService(IConfiguration configuration)
         {
             _configuration = configuration;
+            _organizationName = configuration["Github:OrganizationName"];
         }
 
         private string GenerateJwtToken()
@@ -58,30 +60,30 @@ namespace api.Services
             return handler.WriteToken(jwtToken);
         }
 
-        public async Task<int> GetInstalationAsync(string organizationName, string jwt)
+        public async Task<int> GetInstalationAsync(string jwt)
         {
-            var appClient = new GitHubClient(new ProductHeaderValue(organizationName))
+            var appClient = new GitHubClient(new ProductHeaderValue(_organizationName))
             {
                 Credentials = new Credentials(jwt, AuthenticationType.Bearer)
             };
 
-            var installation = await appClient.GitHubApps.GetOrganizationInstallationForCurrent(organizationName);
+            var installation = await appClient.GitHubApps.GetOrganizationInstallationForCurrent(_organizationName);
 
             return (int)installation.Id;
         }
 
-        public async Task<GitHubClient> GetInstallationAccessClientAsync(string organizationName)
+        public async Task<GitHubClient> GetInstallationAccessClientAsync()
         {
             var jwt = GenerateJwtToken();
-            var installationId = await GetInstalationAsync(organizationName, jwt);
+            var installationId = await GetInstalationAsync(jwt);
 
-            var appClient = new GitHubClient(new ProductHeaderValue(organizationName))
+            var appClient = new GitHubClient(new ProductHeaderValue(_organizationName))
             {
                 Credentials = new Credentials(jwt, AuthenticationType.Bearer)
             };
 
             var response = await appClient.GitHubApps.CreateInstallationToken(installationId);
-            var authenticatedClient = new GitHubClient(new ProductHeaderValue(organizationName))
+            var authenticatedClient = new GitHubClient(new ProductHeaderValue(_organizationName))
             {
                 Credentials = new Credentials(response.Token)
             };
@@ -89,12 +91,12 @@ namespace api.Services
             return authenticatedClient;
         }
 
-        public async Task<GraphQL.Connection> GetGraphQLConnection(string organizationName)
+        public async Task<GraphQL.Connection> GetGraphQLConnection()
         {
-            var restClient = await GetInstallationAccessClientAsync(organizationName);
+            var restClient = await GetInstallationAccessClientAsync();
             var token = restClient.Credentials.GetToken();
 
-            var authenticatedClient = new GraphQL.Connection(new GraphQL.ProductHeaderValue(organizationName), token);
+            var authenticatedClient = new GraphQL.Connection(new GraphQL.ProductHeaderValue(_organizationName), token);
             return authenticatedClient;
         }
     }

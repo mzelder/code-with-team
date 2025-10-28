@@ -35,14 +35,14 @@ namespace api.Controllers
         [HttpPost("create-repo")]
         public async Task<IActionResult> CreateRepository([FromQuery] string repoName)
         {
-            var repository = await _githubBotService.CreateRepositoryAsync(_organizationName, repoName);
+            var repository = await _githubBotService.CreateRepositoryAsync(repoName);
             return Ok(repository);
         }
 
         [HttpPost("create-repo-from-template")]
         public async Task<IActionResult> CreateRepositoryFromTemplateAsync([FromQuery] string repoName)
         {
-            var repository = await _githubBotService.CreateRepositoryFromTemplateAsync(_organizationName, repoName);
+            var repository = await _githubBotService.CreateRepositoryFromTemplateAsync(repoName);
             return Ok(repository);
         }
 
@@ -51,7 +51,7 @@ namespace api.Controllers
         {
             try
             {
-                await _githubBotService.AddColaboratorToRepoAsync(_organizationName, repoName, collaboratorUsername);
+                await _githubBotService.AddColaboratorToRepoAsync(repoName, collaboratorUsername);
                 return Ok(new ApiResponseDto(true, "Colaborator have been added successfully"));
             }
             catch (Exception ex)
@@ -65,7 +65,7 @@ namespace api.Controllers
         {
             try
             {
-                await _githubUserService.AcceptRepositoryInvitationAsync(_organizationName, GetCurrentUserId());
+                await _githubUserService.AcceptRepositoryInvitationAsync(GetCurrentUserId());
                 return Ok(new ApiResponseDto(true, "Repository invitations accepted successfully"));
             }
             catch (Exception ex)
@@ -79,7 +79,7 @@ namespace api.Controllers
         {
             try
             {
-                await _githubBotService.SetBranchRulesAsync(_organizationName, repoName);
+                await _githubBotService.SetBranchRulesAsync(repoName);
                 return Ok(new ApiResponseDto(true, "Branch rules have been set successfully"));
             }
             catch (Exception ex)
@@ -93,8 +93,8 @@ namespace api.Controllers
         {
             try
             {
-                var repo = await _githubBotService.CreateRepositoryAsync(_organizationName, repoName);
-                await _githubBotService.CreateProjectAsync(repo, _organizationName, repoName);
+                var repo = await _githubBotService.CreateRepositoryAsync(repoName);
+                await _githubBotService.CreateProjectAsync(repo, repoName);
                 return Ok(new ApiResponseDto(true, "Project have been created"));
             }
             catch (Exception ex)
@@ -109,13 +109,13 @@ namespace api.Controllers
             try
             {
                 // create repo
-                var repo = await _githubBotService.CreateRepositoryAsync(_organizationName, repoName);
+                var repo = await _githubBotService.CreateRepositoryAsync(repoName);
                 
                 // create project for the repo
-                var project = await _githubBotService.CreateProjectAsync(repo, _organizationName, repoName);
+                var project = await _githubBotService.CreateProjectAsync(repo, repoName);
 
                 // add collabs to project
-                await _githubBotService.AddColaboratorToProjectAsync(repo, project, _organizationName);
+                await _githubBotService.AddColaboratorToProjectAsync(project, GetCurrentUserId());
 
                 return Ok(new ApiResponseDto(true, "Project have been created"));
             }

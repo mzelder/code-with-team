@@ -5,6 +5,7 @@ namespace api.Services.Interfaces
 {
     public interface IGithubUserService
     {
-        Task AcceptRepositoryInvitationAsync(string organizationName, int userId);
+        Task AcceptRepositoryInvitationAsync(int userId);
+        Task<string> GetUserNodeIDAsync(int userId);
     }
 }
