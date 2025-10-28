@@ -11,5 +11,7 @@ namespace api.Services.Interfaces
         Task SetBranchRulesAsync(string repoName, string branch = "main");
         Task<ProjectResult> CreateProjectAsync(Repository repository, string projectName);
         Task AddColaboratorToProjectAsync(ProjectResult project, int userId);
+        Task<int> GetIssueCountAsync(Repository repository);
+        Task<Repository> GetRepositoryByNameAsync(string repoName);
     }
 }

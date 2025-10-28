@@ -130,5 +130,17 @@ namespace api.Services
 
             var result = await connection.Run(mutation);
         }
+
+        public async Task<int> GetIssueCountAsync(Repository repository)
+        {
+            var client = await _githubAppService.GetInstallationAccessClientAsync();
+            var issues = await client.Issue.GetAllForRepository(repository.Id);
+            return issues.Count;
+        }
+        public async Task<Repository> GetRepositoryByNameAsync(string repoName)
+        {
+            var client = await _githubAppService.GetInstallationAccessClientAsync();
+            return await client.Repository.Get(_organizationName, repoName);
+        }
     }
 }
