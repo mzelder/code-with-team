@@ -17,6 +17,8 @@ namespace api.Data
         public DbSet<ProgrammingLanguage> ProgrammingLanguages { get; set; }
         public DbSet<LobbyMember> LobbyMembers { get; set; }
         public DbSet<Lobby> Lobbies { get; set; }
+        public DbSet<UserTaskProgress> UserTaskProgresses { get; set; }
+        public DbSet<TeamTaskProgress> TeamTaskProgresses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -83,6 +85,18 @@ namespace api.Data
                 .WithMany(pl => pl.UserLanguages)
                 .HasForeignKey(ul => ul.ProgrammingLanguageId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<UserTaskProgress>()
+                .HasOne(utp => utp.LobbyMember)
+                .WithOne(lm => lm.UserTaskProgress)
+                .HasForeignKey<UserTaskProgress>(utp => utp.LobbyMemberId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<TeamTaskProgress>()
+                .HasOne(ttp => ttp.Lobby)
+                .WithOne(l => l.TeamTaskProgress)
+                .HasForeignKey<TeamTaskProgress>(ttp => ttp.LobbyId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<User>()
                 .Property(u => u.CreatedAt)

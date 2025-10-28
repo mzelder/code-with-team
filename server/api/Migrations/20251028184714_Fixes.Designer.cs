@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using api.Data;
 
@@ -11,9 +12,11 @@ using api.Data;
 namespace api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251028184714_Fixes")]
+    partial class Fixes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -64,7 +67,13 @@ namespace api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("TeamTaskProgressId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("TeamTaskProgressId")
+                        .IsUnique();
 
                     b.ToTable("Lobbies");
                 });
@@ -94,11 +103,18 @@ namespace api.Migrations
                     b.Property<int>("UserSelectionId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("UserTaskProgressId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("LobbyId");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("UserTaskProgressId")
+                        .IsUnique()
+                        .HasFilter("[UserTaskProgressId] IS NOT NULL");
 
                     b.ToTable("LobbyMembers");
                 });
@@ -210,13 +226,7 @@ namespace api.Migrations
                     b.Property<bool>("CreatedIssues")
                         .HasColumnType("bit");
 
-                    b.Property<int>("LobbyId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("LobbyId")
-                        .IsUnique();
 
                     b.ToTable("TeamTaskProgresses");
                 });
@@ -306,11 +316,11 @@ namespace api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<bool>("JoinedVideoCall")
+                    b.Property<bool>("CreatedIssues")
                         .HasColumnType("bit");
 
-                    b.Property<int>("LobbyMemberId")
-                        .HasColumnType("int");
+                    b.Property<bool>("JoinedVideoCall")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("StartedCoding")
                         .HasColumnType("bit");
@@ -320,10 +330,18 @@ namespace api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("LobbyMemberId")
-                        .IsUnique();
-
                     b.ToTable("UserTaskProgresses");
+                });
+
+            modelBuilder.Entity("api.Models.Lobby", b =>
+                {
+                    b.HasOne("api.Models.TeamTaskProgress", "TeamTaskProgress")
+                        .WithOne("Lobby")
+                        .HasForeignKey("api.Models.Lobby", "TeamTaskProgressId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TeamTaskProgress");
                 });
 
             modelBuilder.Entity("api.Models.LobbyMember", b =>
@@ -338,9 +356,16 @@ namespace api.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("api.Models.UserTaskProgress", "UserTaskProgress")
+                        .WithOne("LobbyMember")
+                        .HasForeignKey("api.Models.LobbyMember", "UserTaskProgressId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.Navigation("Lobby");
 
                     b.Navigation("User");
+
+                    b.Navigation("UserTaskProgress");
                 });
 
             modelBuilder.Entity("api.Models.ProgrammingLanguage", b =>
@@ -363,17 +388,6 @@ namespace api.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("api.Models.TeamTaskProgress", b =>
-                {
-                    b.HasOne("api.Models.Lobby", "Lobby")
-                        .WithOne("TeamTaskProgress")
-                        .HasForeignKey("api.Models.TeamTaskProgress", "LobbyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Lobby");
                 });
 
             modelBuilder.Entity("api.Models.UserLanguage", b =>
@@ -430,17 +444,6 @@ namespace api.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("api.Models.UserTaskProgress", b =>
-                {
-                    b.HasOne("api.Models.LobbyMember", "LobbyMember")
-                        .WithOne("UserTaskProgress")
-                        .HasForeignKey("api.Models.UserTaskProgress", "LobbyMemberId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("LobbyMember");
-                });
-
             modelBuilder.Entity("api.Models.Category", b =>
                 {
                     b.Navigation("Roles");
@@ -448,18 +451,9 @@ namespace api.Migrations
                     b.Navigation("UserSelections");
                 });
 
-            modelBuilder.Entity("api.Models.Lobby", b =>
-                {
-                    b.Navigation("TeamTaskProgress")
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("api.Models.LobbyMember", b =>
                 {
                     b.Navigation("UserSelection")
-                        .IsRequired();
-
-                    b.Navigation("UserTaskProgress")
                         .IsRequired();
                 });
 
@@ -475,6 +469,12 @@ namespace api.Migrations
                     b.Navigation("UserSelections");
                 });
 
+            modelBuilder.Entity("api.Models.TeamTaskProgress", b =>
+                {
+                    b.Navigation("Lobby")
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("api.Models.User", b =>
                 {
                     b.Navigation("LobbbyQueues");
@@ -485,6 +485,12 @@ namespace api.Migrations
             modelBuilder.Entity("api.Models.UserSelection", b =>
                 {
                     b.Navigation("UserLanguages");
+                });
+
+            modelBuilder.Entity("api.Models.UserTaskProgress", b =>
+                {
+                    b.Navigation("LobbyMember")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }
