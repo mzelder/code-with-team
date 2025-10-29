@@ -7,6 +7,8 @@ import UserCard from "./UserCard";
 import { useReadme } from "../../hooks/useReadme";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm"
+import type { TaskProgressDto } from "../../apiClient/tasks/dtos";
+import { getTaskProgress } from "../../apiClient/tasks/tasks";
 
 interface LobbyComponentProps {
     lobbyData: LobbyStatusDto | null;
@@ -14,16 +16,28 @@ interface LobbyComponentProps {
 
 function LobbyComponent({ lobbyData }: LobbyComponentProps) {
     const [repoUrl, setRepoUrl] = useState<string | null>(null);
+    const [tasks, setTasks] = useState<TaskProgressDto | null>(null);
     const repoReadme = useReadme(repoUrl);
     
     useEffect(() => {
         setRepoUrl(lobbyData?.repositoryUrl ?? null);
+        checkTasksProgress(); 
+
     }, [lobbyData]);
     
     const onClickRepositoryButton = () => {
         const repoUrl = lobbyData!.repositoryUrl;
         window.open(repoUrl, "_blank", "noopener,noreferrer");
     }
+
+    const checkTasksProgress = async() => {
+        try {
+            const result = await getTaskProgress();
+            if (result) setTasks(result);
+        } catch (error) {
+            console.log("Error while polling:", error);
+        }
+    };
     
     return (
         <div className="flex flex-row w-full h-screen">
@@ -62,19 +76,19 @@ function LobbyComponent({ lobbyData }: LobbyComponentProps) {
                         <div className="flex flex-col p-8 pt-3 bg-[#374151] border-solid border-1 border-white rounded-md text-white leading-relaxed text-xl">
                             <h1 className="text-center font-medium">Your First Steps</h1>
                             <div className="flex flex-row gap-3 items-center">
-                                <CheckBox isChecked={true}/>
+                                <CheckBox isChecked={tasks?.joinedVideoCall ?? false}/>
                                 <p>Join a video call with your team</p>
                             </div>
                             <div className="flex flex-row gap-3 items-center">
-                                <CheckBox isChecked={true}/>
+                                <CheckBox isChecked={tasks?.visitedRepo ?? false}/>
                                 <p>Visit the Github repository</p>
                             </div> 
                             <div className="flex flex-row gap-3 items-center">
-                                <CheckBox isChecked={false}/>
+                                <CheckBox isChecked={tasks?.createdIssues ?? false}/>
                                 <p>Break down the tasks</p>
                             </div>
                             <div className="flex flex-row gap-3 items-center">
-                                <CheckBox isChecked={false}/>
+                                <CheckBox isChecked={tasks?.startedCoding ?? false}/>
                                 <p>Start coding!</p>
                             </div>
                         </div>
