@@ -200,6 +200,7 @@ namespace api.Services
                     {
                         Status = "Active",
                         CreatedAt = DateTime.Now,
+                        TeamTaskProgress = new TeamTaskProgress()
                     };
                     _context.Lobbies.Add(lobby);
 
@@ -207,6 +208,7 @@ namespace api.Services
                     {
                         member.Lobby = lobby;
                         member.Status = LobbyMember.QueueStatus.FoundLobby;
+                        member.UserTaskProgress = new UserTaskProgress();
                     }
 
                     await _context.SaveChangesAsync();

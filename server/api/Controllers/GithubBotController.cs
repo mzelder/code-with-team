@@ -2,6 +2,7 @@
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Octokit;
 using Octokit.Internal;
 
 namespace api.Controllers
@@ -118,6 +119,22 @@ namespace api.Controllers
                 await _githubBotService.AddColaboratorToProjectAsync(project, GetCurrentUserId());
 
                 return Ok(new ApiResponseDto(true, "Project have been created"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponseDto(false, $"Failed to create project: {ex.Message}"));
+            }
+        }
+
+
+        [HttpPost("check-issues")]
+        public async Task<IActionResult> GetIssuesCount([FromQuery] string repoName)
+        {
+            try
+            {
+                var repo = await _githubBotService.GetRepositoryByNameAsync(repoName);
+                var issues = await _githubBotService.GetIssueCountAsync(repo);
+                return Ok(new ApiResponseDto(true, issues.ToString()));
             }
             catch (Exception ex)
             {
