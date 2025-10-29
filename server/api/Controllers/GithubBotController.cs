@@ -2,6 +2,7 @@
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Octokit;
 using Octokit.Internal;
 
 namespace api.Controllers
@@ -15,8 +16,17 @@ namespace api.Controllers
         private readonly IConfiguration _configuration;
         private readonly string _organizationName;
 
-        public GithubBotController(IGithubBotService githubBotService, IGithubUserService githubUserService,IConfiguration configuration)
+        public GithubBotController(IGithubBotService githubBotService, 
+            IGithubUserService githubUserService, 
+            IConfiguration configuration,
+            IHostEnvironment env)
         {
+            if (!env.IsDevelopment())
+            {
+                throw new InvalidOperationException
+                    ("GithubBotContoller can only be used in Development environment.");
+            }
+            
             _githubBotService = githubBotService;
             _githubUserService = githubUserService;
             _configuration = configuration;
@@ -26,25 +36,25 @@ namespace api.Controllers
         [HttpPost("create-repo")]
         public async Task<IActionResult> CreateRepository([FromQuery] string repoName)
         {
-            var repository = await _githubBotService.CreateRepositoryAsync(_organizationName, repoName);
-            return Ok(repository);
-        }
-        
-        [HttpPost("create-repo-from-template")]
-        public async Task<IActionResult> CreateRepositoryFromTemplateAsync([FromQuery] string repoName)
-        {
-            var repository = await _githubBotService.CreateRepositoryFromTemplateAsync(_organizationName, repoName);
+            var repository = await _githubBotService.CreateRepositoryAsync(repoName);
             return Ok(repository);
         }
 
-        [HttpPost("add-collaborator")]
-        public async Task<IActionResult> AddCollaborator([FromQuery] string repoName, [FromQuery] string collaboratorUsername)
+        [HttpPost("create-repo-from-template")]
+        public async Task<IActionResult> CreateRepositoryFromTemplateAsync([FromQuery] string repoName)
+        {
+            var repository = await _githubBotService.CreateRepositoryFromTemplateAsync(repoName);
+            return Ok(repository);
+        }
+
+        [HttpPost("add-collaborator-to-repo")]
+        public async Task<IActionResult> AddCollaboratorToRepo([FromQuery] string repoName, [FromQuery] string collaboratorUsername)
         {
             try
             {
-                await _githubBotService.AddColaboratorAsync(_organizationName, repoName, collaboratorUsername);
+                await _githubBotService.AddColaboratorToRepoAsync(repoName, collaboratorUsername);
                 return Ok(new ApiResponseDto(true, "Colaborator have been added successfully"));
-            } 
+            }
             catch (Exception ex)
             {
                 return BadRequest(new ApiResponseDto(false, $"Failed to add collaborator: {ex.Message}"));
@@ -56,7 +66,7 @@ namespace api.Controllers
         {
             try
             {
-                await _githubUserService.AcceptRepositoryInvitationAsync(_organizationName, GetCurrentUserId());
+                await _githubUserService.AcceptRepositoryInvitationAsync(GetCurrentUserId());
                 return Ok(new ApiResponseDto(true, "Repository invitations accepted successfully"));
             }
             catch (Exception ex)
@@ -70,12 +80,65 @@ namespace api.Controllers
         {
             try
             {
-                await _githubBotService.SetBranchRulesAsync(_organizationName, repoName);
+                await _githubBotService.SetBranchRulesAsync(repoName);
                 return Ok(new ApiResponseDto(true, "Branch rules have been set successfully"));
             }
             catch (Exception ex)
             {
                 return BadRequest(new ApiResponseDto(false, $"Failed to set branch rules: {ex.Message}"));
+            }
+        }
+
+        [HttpPost("create-project-for-repo")]
+        public async Task<IActionResult> CreateProjectForRepository([FromQuery] string repoName, [FromQuery] int repositoryId)
+        {
+            try
+            {
+                var repo = await _githubBotService.CreateRepositoryAsync(repoName);
+                await _githubBotService.CreateProjectAsync(repo, repoName);
+                return Ok(new ApiResponseDto(true, "Project have been created"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponseDto(false, $"Failed to create project: {ex.Message}"));
+            }
+        }
+
+        [HttpPost("add-collaborator-to-project")]
+        public async Task<IActionResult> AddCollaboratorToProject([FromQuery] string repoName)
+        {
+            try
+            {
+                // create repo
+                var repo = await _githubBotService.CreateRepositoryAsync(repoName);
+                
+                // create project for the repo
+                var project = await _githubBotService.CreateProjectAsync(repo, repoName);
+
+                // add collabs to project
+                await _githubBotService.AddColaboratorToProjectAsync(project, GetCurrentUserId());
+
+                return Ok(new ApiResponseDto(true, "Project have been created"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponseDto(false, $"Failed to create project: {ex.Message}"));
+            }
+        }
+
+
+        [HttpPost("check-issues")]
+        public async Task<IActionResult> GetIssuesCount([FromQuery] string repoName)
+        {
+            try
+            {
+                var repo = await _githubBotService.GetRepositoryByNameAsync(repoName);
+                var issues = await _githubBotService.GetIssueCountAsync(repo);
+                return Ok(new ApiResponseDto(true, issues.ToString()));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponseDto(false, $"Failed to create project: {ex.Message}"));
             }
         }
     }

@@ -54,27 +54,29 @@ namespace api.Services
             {
                 // Create repository from template
                 var repository = await _githubBotService.CreateRepositoryFromTemplateAsync(
-                    _organizationName,
                     GenerateRepositoryName()
                 );
                 await Task.Delay(5000, cancellationToken);
 
                 // Set branch protection rules
-                await _githubBotService.SetBranchRulesAsync(_organizationName, repository.Name);
+                await _githubBotService.SetBranchRulesAsync(repository.Name);
 
-                // Add collaborators
+                // Create project for repository
+                var project = await _githubBotService.CreateProjectAsync(
+                    repository,
+                    repository.Name
+                );
+
+                // Add collaborators to reposisotry and project
                 foreach (var user in users)
                 {
-                    await _githubBotService.AddColaboratorAsync(
-                        _organizationName,
+                    await _githubBotService.AddColaboratorToRepoAsync(
                         repository.Name,
                         user.Username
                     );
 
-                    await _githubUserService.AcceptRepositoryInvitationAsync(
-                        _organizationName,
-                        user.Id
-                    );
+                    await _githubBotService.AddColaboratorToProjectAsync(project, user.Id);
+                    await _githubUserService.AcceptRepositoryInvitationAsync(user.Id);
                 }
 
                 // Save repository url to lobby element
