@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import type { LobbyStatusDto } from "../../apiClient/matchmaking/dtos";
 import Button from "../shared/Button";
 import CheckBox from "../shared/CheckBox";
 import UserAvatar from "../shared/UserAvatar";
@@ -8,6 +7,8 @@ import { useReadme } from "../../hooks/useReadme";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm"
 import type { TaskProgressDto } from "../../apiClient/tasks/dtos";
+import type { LobbyStatusDto } from "../../apiClient/matchmaking/dtos";
+import ChatContainer from "../chat/ChatContainer";
 import { getTaskProgress } from "../../apiClient/tasks/tasks";
 
 interface LobbyComponentProps {
@@ -17,6 +18,7 @@ interface LobbyComponentProps {
 function LobbyComponent({ lobbyData }: LobbyComponentProps) {
     const [repoUrl, setRepoUrl] = useState<string | null>(null);
     const [tasks, setTasks] = useState<TaskProgressDto | null>(null);
+    const [showChat, setShowChat] = useState<boolean>(false);
     const repoReadme = useReadme(repoUrl);
     
     useEffect(() => {
@@ -40,39 +42,75 @@ function LobbyComponent({ lobbyData }: LobbyComponentProps) {
     };
     
     return (
-        <div className="flex flex-row w-full h-screen">
-            <div className="flex flex-col p-4 items-center h-full justify-between border-solid border-r-4 border-[#374151]">
-                <div className="flex flex-col gap-2">
-                    {lobbyData?.members.map((user, index) => (
-                        <UserCard 
-                            key={index}
-                            userName={user.name}
-                            userRole={user.role}
+        <div className="flex flex-row w-full h-screen overflow-hidden">
+            <div className="flex flex-col p-4 items-center h-full w-1/4 justify-between border-solid border-r-4 border-[#374151] overflow-hidden">
+                {!showChat ? (
+                        // When chat is closed
+                    <>
+                        <div className="flex flex-col overflow-y-auto w-full">
+                            {lobbyData?.members.map((user, index) => (
+                                <UserCard 
+                                    key={index}
+                                    userName={user.name}
+                                    userRole={user.role}
+                                />
+                            ))}
+                        </div>
+                        <Button 
+                            className="flex-shrink-0 w-full"
+                            defaultBorderColor="white"
+                            defaultTextColor="white"
+                            text="Chat"
+                            onToggle={() => setShowChat(!showChat)}
                         />
-                    ))}
-                </div>
-                <Button 
-                    defaultBorderColor="white"
-                    defaultTextColor="white"
-                    text="Chat"
-                />
+                    </>
+                ) : (
+                    // When chat is open
+                    <div className="flex flex-col gap-4 w-full h-full overflow-hidden">
+                        <Button 
+                            className="w-full flex-shrink-0"
+                            defaultBorderColor="white"
+                            defaultTextColor="white"
+                            text="Go back to team"
+                            onToggle={() => setShowChat(!showChat)}
+                        />
+                        <div className="flex flex-row relative justify-center flex-shrink-0">
+                            {lobbyData?.members.map((user, index) => (
+                                <div 
+                                    key={index}
+                                    className="relative"
+                                    style={{ 
+                                        marginLeft: index === 0 ? '0' : '-30px',
+                                        zIndex: index 
+                                    }}
+                                >
+                                    <UserAvatar width={70} userName={user.name} />
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="flex-1 min-h-0 overflow-hidden">
+                            <ChatContainer />
+                        </div>
+                    </div>
+                )}
             </div>
             
-            <div className="flex flex-col items-center w-full h-full justify-start">
-                <div className="bg-white text-center px-5 py-6 w-full h-1/10 outline-4 outline-white items-center justify-center flex">
+            <div className="flex flex-col items-center w-full h-full overflow-hidden">
+                <div className="bg-white text-center px-5 py-6 w-full outline-4 outline-white items-center justify-center flex flex-shrink-0">
                     <h1 className="text-black text-4xl font-medium w-full">
                         Startup Product Landing Page
                     </h1>    
                 </div>
                 
-                <div className="flex flex-col w-full h-full p-6">
-                    <div className="flex flex-col items-start overflow-auto mb-6 p-8 px-18 bg-[#374151] border-solid border-1 border-white rounded-md space-y-4 text-white leading-relaxed text-xl">
-                        <div className="prose prose-invert prose-2xl">
-                            <Markdown remarkPlugins={[remarkGfm]}>{repoReadme}</Markdown>
-                        </div>
+                <div className="flex flex-col w-full flex-1 min-h-0 p-6 gap-6 overflow-y-auto">
+                    <div className="flex flex-col items-start p-8 px-18 bg-[#374151] border-solid border-1 border-white rounded-md space-y-4 flex-1 min-h-0 overflow-y-auto">
+                    <div className="prose prose-invert">
+                        <Markdown remarkPlugins={[remarkGfm]}>{repoReadme}</Markdown>
                     </div>
+                </div>
                     
-                    <div className="grid grid-cols-3 gap-6">
+                    <div className="grid grid-cols-3 gap-6 flex-shrink-0">
                         <div className="flex flex-col p-8 pt-3 bg-[#374151] border-solid border-1 border-white rounded-md text-white leading-relaxed text-xl">
                             <h1 className="text-center font-medium">Your First Steps</h1>
                             <div className="flex flex-row gap-3 items-center">
@@ -117,6 +155,7 @@ function LobbyComponent({ lobbyData }: LobbyComponentProps) {
                             <div className="flex flex-row gap-2 justify-center mt-6">
                                 {lobbyData?.members.map((user, index) => (
                                     <UserAvatar 
+                                        key={index}
                                         width={60}
                                         userName={user.name}    
                                         finished={false}
