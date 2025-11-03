@@ -21,7 +21,7 @@ function ChatBubble({
                         <time className="text-xs opacity-50 text-white">{date}</time>
                         <span className="text-sm font-semibold text-white">{userName}</span>
                     </div>
-                    <div className="bg-[#00D1FF] text-black rounded-lg px-4 py-2 break-all">
+                    <div className="bg-[#00D1FF] text-black rounded-lg px-4 py-2 break-all w-fit">
                         {message}
                     </div>
                 </div>
@@ -42,7 +42,7 @@ function ChatBubble({
                     <span className="text-sm font-semibold text-white">{userName}</span>
                     <time className="text-xs opacity-50 text-white">{date}</time>
                 </div>
-                <div className="bg-gray-700 text-white rounded-lg px-4 py-2 break-all">
+                <div className="bg-gray-700 text-white rounded-lg px-4 py-2 break-all w-fit">
                     {message}
                 </div>
             </div>

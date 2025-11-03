@@ -1,12 +1,15 @@
 import { useState } from "react";
 
-function ChatInput() {
+interface ChatInputProps {
+    onSend: (message: string) => void;
+}
+
+function ChatInput({ onSend }: ChatInputProps) {
     const [message, setMessage] = useState("");
 
     const handleSend = () => {
         if (message.trim()) {
-            // Handle sending message here
-            console.log("Sending:", message);
+            onSend(message);
             setMessage("");
         }
     };

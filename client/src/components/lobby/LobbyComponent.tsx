@@ -10,6 +10,7 @@ import type { TaskProgressDto } from "../../apiClient/tasks/dtos";
 import type { LobbyStatusDto } from "../../apiClient/matchmaking/dtos";
 import ChatContainer from "../chat/ChatContainer";
 import { getTaskProgress } from "../../apiClient/tasks/tasks";
+import useCurrentUser from "../../hooks/useCurrentUser";
 
 interface LobbyComponentProps {
     lobbyData: LobbyStatusDto | null;
@@ -20,6 +21,7 @@ function LobbyComponent({ lobbyData }: LobbyComponentProps) {
     const [tasks, setTasks] = useState<TaskProgressDto | null>(null);
     const [showChat, setShowChat] = useState<boolean>(false);
     const repoReadme = useReadme(repoUrl);
+    const currentUser = useCurrentUser();
     
     useEffect(() => {
         setRepoUrl(lobbyData?.repositoryUrl ?? null);
@@ -90,7 +92,10 @@ function LobbyComponent({ lobbyData }: LobbyComponentProps) {
                         </div>
 
                         <div className="flex-1 min-h-0 overflow-hidden">
-                            <ChatContainer />
+                            <ChatContainer 
+                                lobbyId={lobbyData!.lobbyId.toString()} 
+                                currentUser={currentUser ?? ""}
+                            />
                         </div>
                     </div>
                 )}
