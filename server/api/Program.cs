@@ -47,6 +47,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddDataProtection();
+builder.Services.AddSignalR();
 builder.Services.AddScoped<IMatchmakingService, MatchmakingService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IGithubAppService, GithubAppService>();
@@ -71,6 +72,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<api.Hubs.ChatHub>("/hubs/chat");
 
 app.Run();
 
