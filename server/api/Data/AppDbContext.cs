@@ -19,6 +19,7 @@ namespace api.Data
         public DbSet<Lobby> Lobbies { get; set; }
         public DbSet<UserTaskProgress> UserTaskProgresses { get; set; }
         public DbSet<TeamTaskProgress> TeamTaskProgresses { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
