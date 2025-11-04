@@ -18,7 +18,7 @@ interface LobbyComponentProps {
 
 function LobbyComponent({ lobbyData }: LobbyComponentProps) {
     const [repoUrl, setRepoUrl] = useState<string | null>(null);
-    const [tasks, setTasks] = useState<TaskProgressDto | null>(null);
+    const [tasks, setTasks] = useState<TaskProgressDto[] | null>(null);
     const [showChat, setShowChat] = useState<boolean>(false);
     const repoReadme = useReadme(repoUrl);
     const currentUser = useCurrentUser();
@@ -118,22 +118,12 @@ function LobbyComponent({ lobbyData }: LobbyComponentProps) {
                     <div className="grid grid-cols-3 gap-6 flex-shrink-0">
                         <div className="flex flex-col p-8 pt-3 bg-[#374151] border-solid border-1 border-white rounded-md text-white leading-relaxed text-xl">
                             <h1 className="text-center font-medium">Your First Steps</h1>
-                            <div className="flex flex-row gap-3 items-center">
-                                <CheckBox isChecked={tasks?.joinedVideoCall ?? false}/>
-                                <p>Join a video call with your team</p>
-                            </div>
-                            <div className="flex flex-row gap-3 items-center">
-                                <CheckBox isChecked={tasks?.visitedRepo ?? false}/>
-                                <p>Visit the Github repository</p>
-                            </div> 
-                            <div className="flex flex-row gap-3 items-center">
-                                <CheckBox isChecked={tasks?.createdIssues ?? false}/>
-                                <p>Break down the tasks</p>
-                            </div>
-                            <div className="flex flex-row gap-3 items-center">
-                                <CheckBox isChecked={tasks?.startedCoding ?? false}/>
-                                <p>Start coding!</p>
-                            </div>
+                            {tasks?.map((task, index) => (
+                                <div key={index} className="flex flex-row gap-3 items-center">
+                                    <CheckBox isChecked={task.isCompleted}/>
+                                    <p>{task.name}</p>
+                                </div>
+                            ))}
                         </div>
                         
                         <div className="flex flex-col gap-6">
