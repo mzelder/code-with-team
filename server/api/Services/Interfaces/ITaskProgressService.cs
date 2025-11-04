@@ -1,11 +1,11 @@
 ﻿using api.Dtos.TaskProgress;
-using api.Models;
+using api.Models.Tasks;
 
 namespace api.Services.Interfaces
 {
     public interface ITaskProgressService
     {
-        Task<UserTaskProgress> GetUserTaskProgressAsync(int userId);
-        Task<TeamTaskProgress> GetTeamTaskProgressAsync(int userId);
+        Task<IEnumerable<UserTask>> GetUserTaskProgressAsync(int userId);
+        Task<IEnumerable<TeamTask>> GetTeamTaskProgressAsync(int userId);
     }
 }

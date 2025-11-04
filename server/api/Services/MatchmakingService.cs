@@ -2,6 +2,7 @@
 using api.Dtos;
 using api.Dtos.Matchmaking;
 using api.Models;
+using api.Models.Tasks;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
@@ -196,21 +197,58 @@ namespace api.Services
 
                 if (potentialLobbyMembers.Count == _lobbySize)
                 {
+                    // create lobby
                     var lobby = new Lobby
                     {
                         Status = "Active",
                         CreatedAt = DateTime.Now,
-                        TeamTaskProgress = new TeamTaskProgress()
                     };
                     _context.Lobbies.Add(lobby);
 
+                    // add team tasks for the lobby
+                    var teamTaskDefinitions = await _context.TaskDefinitions
+                        .Where(td => td.Category == TaskCategory.Team)
+                        .ToListAsync();
+
+                    var teamTaskProgress = new TeamTaskProgress { Lobby = lobby };
+                    _context.TeamTaskProgresses.Add(teamTaskProgress);
+
+                    foreach (var task in teamTaskDefinitions)
+                    {
+                        _context.TeamTasks.Add(new TeamTask
+                        {
+                            Name = task.Name,
+                            Description = task.Description,
+                            IsCompleted = false,
+                            TeamTaskProgress = teamTaskProgress
+                        });
+                    }
+
+                    var userTaskDefinitions = await _context.TaskDefinitions
+                        .Where(td => td.Category == TaskCategory.User)
+                        .ToListAsync();
+
+                    // add users to the lobby
                     foreach (var member in potentialLobbyMembers)
                     {
                         member.Lobby = lobby;
                         member.Status = LobbyMember.QueueStatus.FoundLobby;
-                        member.UserTaskProgress = new UserTaskProgress();
-                    }
 
+                        var userTaskProgress = new UserTaskProgress { LobbyMember = member };
+                        _context.UserTaskProgresses.Add(userTaskProgress);
+
+                        // add tasks to the each user
+                        foreach (var task in userTaskDefinitions)
+                        {
+                            _context.UserTasks.Add(new UserTask
+                            {
+                                Name = task.Name,
+                                Description = task.Description,
+                                IsCompleted = false,
+                                UserTaskProgress = userTaskProgress
+                            });
+                        }
+                    }
                     await _context.SaveChangesAsync();
                 }
             }

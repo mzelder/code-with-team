@@ -1,4 +1,4 @@
-﻿namespace api.Models
+﻿namespace api.Models.Tasks
 {
     public class TeamTaskProgress
     {
@@ -6,5 +6,7 @@
         
         public int LobbyId { get; set; }
         public Lobby Lobby { get; set; }
+
+        public ICollection<TeamTask> TeamTasks { get; set; }
     }
 }

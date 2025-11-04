@@ -1,4 +1,6 @@
-﻿namespace api.Models
+﻿using api.Models.Tasks;
+
+namespace api.Models
 {
     public class Lobby
     {
