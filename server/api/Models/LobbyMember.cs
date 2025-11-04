@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using api.Models.Tasks;
+using Microsoft.AspNetCore.SignalR;
 
 namespace api.Models
 {

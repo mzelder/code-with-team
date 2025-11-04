@@ -1,7 +1,8 @@
 ﻿using api.Data;
 using api.Dtos.TaskProgress;
-using api.Models;
+using api.Models.Tasks;
 using api.Services.Interfaces;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Services
@@ -17,45 +18,62 @@ namespace api.Services
             _githubBotService = githubBotService;
         }
 
-        public async Task<UserTaskProgress> GetUserTaskProgressAsync(int userId)
+        public async Task<IEnumerable<UserTask>> GetUserTaskProgressAsync(int userId)
         {
-            var taskProgress = await _context.UserTaskProgresses
-                .FirstOrDefaultAsync(utp => utp.LobbyMember.UserId == userId);
-            if (taskProgress == null)
+            var tasks = await _context.UserTasks
+                .Include(ut => ut.UserTaskProgress)
+                    .ThenInclude(utp => utp.LobbyMember)
+                .Where(ut => ut.UserTaskProgress.LobbyMember.UserId == userId)
+                .ToListAsync();
+
+            if (!tasks.Any())
             {
                 throw new InvalidOperationException($"Task progress for user ID {userId} does not exist.");
             }
-            return taskProgress;
+
+            return tasks;
         }
 
-        public async Task<TeamTaskProgress> GetTeamTaskProgressAsync(int userId)
+        public async Task<IEnumerable<TeamTask>> GetTeamTaskProgressAsync(int userId)
         {
             var lobbyId = await _context.LobbyMembers
                 .Where(lm => lm.UserId == userId)
                 .Select(lm => lm.LobbyId)
                 .FirstOrDefaultAsync();
 
-            var teamTaskProgress = await _context.TeamTaskProgresses
-                .FirstOrDefaultAsync(ttp => ttp.LobbyId == lobbyId);
-            
-            if (teamTaskProgress == null || lobbyId == null)
+            if (lobbyId == null)
+            {
+                throw new InvalidOperationException($"User {userId} is not a member of any lobby.");
+            }
+
+            var tasks = await _context.TeamTasks
+                .Include(tt => tt.TeamTaskProgress)
+                    .ThenInclude(ttp => ttp.Lobby)
+                .Where(tt => tt.TeamTaskProgress.LobbyId == lobbyId)
+                .ToListAsync();
+
+            if (!tasks.Any())
             {
                 throw new InvalidOperationException($"Team task progress for lobby ID {lobbyId} does not exist.");
             }
 
-            if (!teamTaskProgress.CreatedIssues)
+            var createdIssuesTask = tasks
+                .FirstOrDefault(t => t.Name == "Break down the tasks"); // change it to enumerate??
+
+            if (createdIssuesTask != null && !createdIssuesTask.IsCompleted)
             {
-                await UpdateCreatedIssuesAsync(lobbyId.Value);
+                await UpdateCreatedIssuesAsync(lobbyId.Value, createdIssuesTask);
             }
 
-            return teamTaskProgress;
+            return tasks;
         }
 
-        private async Task UpdateCreatedIssuesAsync(int lobbyId)
+        private async Task UpdateCreatedIssuesAsync(int lobbyId, TeamTask createdIssuesTask)
         {
             var lobby = await _context.Lobbies
-                .Where(l => l.Id == lobbyId)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(l => l.Id == lobbyId);
+
+            if (lobby == null) return;
 
             var repoName = lobby.RepositoryUrl.Split("/")[^1];
             var repo = await _githubBotService.GetRepositoryByNameAsync(repoName);
@@ -63,7 +81,7 @@ namespace api.Services
             
             if (issuesCount < 5) return;
 
-            lobby.TeamTaskProgress.CreatedIssues = true;
+            createdIssuesTask.IsCompleted = true;
             await _context.SaveChangesAsync();
         }
     }

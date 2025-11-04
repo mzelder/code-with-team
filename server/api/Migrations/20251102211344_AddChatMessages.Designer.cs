@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using api.Data;
 
@@ -11,9 +12,11 @@ using api.Data;
 namespace api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251102211344_AddChatMessages")]
+    partial class AddChatMessages
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -229,7 +232,7 @@ namespace api.Migrations
                         });
                 });
 
-            modelBuilder.Entity("api.Models.Tasks.TaskDefinitions", b =>
+            modelBuilder.Entity("api.Models.TeamTaskProgress", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -237,103 +240,8 @@ namespace api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Category")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsCompleted")
+                    b.Property<bool>("CreatedIssues")
                         .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("TaskDefinitions");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Category = 1,
-                            Description = "",
-                            IsCompleted = false,
-                            Name = "Book meeting"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Category = 1,
-                            Description = "",
-                            IsCompleted = false,
-                            Name = "Attend your scheduled team meeting"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Category = 1,
-                            Description = "",
-                            IsCompleted = false,
-                            Name = "Break down the tasks"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Category = 0,
-                            Description = "",
-                            IsCompleted = false,
-                            Name = "Visit github repository"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Category = 0,
-                            Description = "",
-                            IsCompleted = false,
-                            Name = "Start coding"
-                        });
-                });
-
-            modelBuilder.Entity("api.Models.Tasks.TeamTask", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsCompleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("TeamTaskProgressId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TeamTaskProgressId");
-
-                    b.ToTable("TeamTasks");
-                });
-
-            modelBuilder.Entity("api.Models.Tasks.TeamTaskProgress", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("LobbyId")
                         .HasColumnType("int");
@@ -344,54 +252,6 @@ namespace api.Migrations
                         .IsUnique();
 
                     b.ToTable("TeamTaskProgresses");
-                });
-
-            modelBuilder.Entity("api.Models.Tasks.UserTask", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsCompleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserTaskProgressId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserTaskProgressId");
-
-                    b.ToTable("UserTasks");
-                });
-
-            modelBuilder.Entity("api.Models.Tasks.UserTaskProgress", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("LobbyMemberId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LobbyMemberId")
-                        .IsUnique();
-
-                    b.ToTable("UserTaskProgresses");
                 });
 
             modelBuilder.Entity("api.Models.User", b =>
@@ -471,6 +331,34 @@ namespace api.Migrations
                     b.ToTable("UserSelections");
                 });
 
+            modelBuilder.Entity("api.Models.UserTaskProgress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("JoinedVideoCall")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("LobbyMemberId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("StartedCoding")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("VisitedRepo")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LobbyMemberId")
+                        .IsUnique();
+
+                    b.ToTable("UserTaskProgresses");
+                });
+
             modelBuilder.Entity("api.Models.ChatMessage", b =>
                 {
                     b.HasOne("api.Models.Lobby", "Lobby")
@@ -529,48 +417,15 @@ namespace api.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("api.Models.Tasks.TeamTask", b =>
-                {
-                    b.HasOne("api.Models.Tasks.TeamTaskProgress", "TeamTaskProgress")
-                        .WithMany("TeamTasks")
-                        .HasForeignKey("TeamTaskProgressId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("TeamTaskProgress");
-                });
-
-            modelBuilder.Entity("api.Models.Tasks.TeamTaskProgress", b =>
+            modelBuilder.Entity("api.Models.TeamTaskProgress", b =>
                 {
                     b.HasOne("api.Models.Lobby", "Lobby")
                         .WithOne("TeamTaskProgress")
-                        .HasForeignKey("api.Models.Tasks.TeamTaskProgress", "LobbyId")
+                        .HasForeignKey("api.Models.TeamTaskProgress", "LobbyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Lobby");
-                });
-
-            modelBuilder.Entity("api.Models.Tasks.UserTask", b =>
-                {
-                    b.HasOne("api.Models.Tasks.UserTaskProgress", "UserTaskProgress")
-                        .WithMany("UserTasks")
-                        .HasForeignKey("UserTaskProgressId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("UserTaskProgress");
-                });
-
-            modelBuilder.Entity("api.Models.Tasks.UserTaskProgress", b =>
-                {
-                    b.HasOne("api.Models.LobbyMember", "LobbyMember")
-                        .WithOne("UserTaskProgress")
-                        .HasForeignKey("api.Models.Tasks.UserTaskProgress", "LobbyMemberId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("LobbyMember");
                 });
 
             modelBuilder.Entity("api.Models.UserLanguage", b =>
@@ -627,6 +482,17 @@ namespace api.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("api.Models.UserTaskProgress", b =>
+                {
+                    b.HasOne("api.Models.LobbyMember", "LobbyMember")
+                        .WithOne("UserTaskProgress")
+                        .HasForeignKey("api.Models.UserTaskProgress", "LobbyMemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LobbyMember");
+                });
+
             modelBuilder.Entity("api.Models.Category", b =>
                 {
                     b.Navigation("Roles");
@@ -659,16 +525,6 @@ namespace api.Migrations
                     b.Navigation("ProgrammingLanguages");
 
                     b.Navigation("UserSelections");
-                });
-
-            modelBuilder.Entity("api.Models.Tasks.TeamTaskProgress", b =>
-                {
-                    b.Navigation("TeamTasks");
-                });
-
-            modelBuilder.Entity("api.Models.Tasks.UserTaskProgress", b =>
-                {
-                    b.Navigation("UserTasks");
                 });
 
             modelBuilder.Entity("api.Models.User", b =>

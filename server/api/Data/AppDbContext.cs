@@ -1,5 +1,7 @@
 ﻿using api.Models;
+using api.Models.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 
 namespace api.Data
 {
@@ -17,7 +19,10 @@ namespace api.Data
         public DbSet<ProgrammingLanguage> ProgrammingLanguages { get; set; }
         public DbSet<LobbyMember> LobbyMembers { get; set; }
         public DbSet<Lobby> Lobbies { get; set; }
+        public DbSet<TaskDefinitions> TaskDefinitions { get; set; }
+        public DbSet<UserTask> UserTasks { get; set; }
         public DbSet<UserTaskProgress> UserTaskProgresses { get; set; }
+        public DbSet<TeamTask> TeamTasks { get; set; }
         public DbSet<TeamTaskProgress> TeamTaskProgresses { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
 
@@ -130,6 +135,47 @@ namespace api.Data
 
                 // PM
                 new ProgrammingLanguage { Id = 4, Name = "Standard", RoleId = 4 }
+            );
+
+            modelBuilder.Entity<TaskDefinitions>().HasData(
+                // Team Tasks
+                new TaskDefinitions
+                {
+                    Id = 1,
+                    Name = "Book meeting",
+                    Description = "",
+                    Category = TaskCategory.Team
+                },
+                new TaskDefinitions
+                {
+                    Id = 2,
+                    Name = "Attend your scheduled team meeting",
+                    Description = "",
+                    Category = TaskCategory.Team
+                },
+                new TaskDefinitions
+                {
+                    Id = 3,
+                    Name = "Break down the tasks",
+                    Description = "",
+                    Category = TaskCategory.Team
+                },
+
+                // User Tasks
+                new TaskDefinitions
+                {
+                    Id = 4,
+                    Name = "Visit github repository",
+                    Description = "",
+                    Category = TaskCategory.User
+                },
+                new TaskDefinitions
+                {
+                    Id = 5,
+                    Name = "Start coding",
+                    Description = "",
+                    Category = TaskCategory.User
+                }
             );
         }
     }

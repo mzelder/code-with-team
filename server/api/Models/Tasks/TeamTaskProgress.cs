@@ -1,12 +1,12 @@
-﻿namespace api.Models
+﻿namespace api.Models.Tasks
 {
     public class TeamTaskProgress
     {
         public int Id { get; set; }
-
+        
         public int LobbyId { get; set; }
         public Lobby Lobby { get; set; }
 
-        public bool CreatedIssues { get; set; }
+        public ICollection<TeamTask> TeamTasks { get; set; }
     }
 }

@@ -26,20 +26,18 @@ namespace api.Controllers
 
         [HttpGet("get-tasks")]
         [Authorize]
-        public async Task<ActionResult<TaskProgressDto>> GetTasks()
+        public async Task<ActionResult<IEnumerable<TaskProgressDto>>> GetTasks()
         {
+            var tasks = new List<TaskProgressDto>();
             try
             {
-                var userTaskProgress = await _taskProgressService.GetUserTaskProgressAsync(GetCurrentUserId());
-                var teamTaskProgress = await _taskProgressService.GetTeamTaskProgressAsync(GetCurrentUserId());
-                
-                return Ok(new TaskProgressDto
-                {
-                    CreatedIssues = teamTaskProgress.CreatedIssues,
-                    JoinedVideoCall = userTaskProgress.JoinedVideoCall,
-                    VisitedRepo = userTaskProgress.VisitedRepo,
-                    StartedCoding = userTaskProgress.StartedCoding
-                });
+                var userTasks = await _taskProgressService.GetUserTaskProgressAsync(GetCurrentUserId());
+                var teamTasks = await _taskProgressService.GetTeamTaskProgressAsync(GetCurrentUserId());
+
+                tasks.AddRange(userTasks.Select(ut => new TaskProgressDto(ut)));
+                tasks.AddRange(teamTasks.Select(tt => new TaskProgressDto(tt)));
+
+                return tasks;
             } 
             catch (InvalidOperationException ex)
             {

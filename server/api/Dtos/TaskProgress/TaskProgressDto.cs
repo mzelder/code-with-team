@@ -1,10 +1,25 @@
-﻿namespace api.Dtos.TaskProgress
+﻿using api.Models.Tasks;
+
+namespace api.Dtos.TaskProgress
 {
     public class TaskProgressDto
     {
-        public bool CreatedIssues { get; set; }
-        public bool JoinedVideoCall { get; set; }
-        public bool VisitedRepo { get; set; }
-        public bool StartedCoding { get; set; }
-    }
+        public string Name { get; set; }
+        public bool IsCompleted { get; set; }
+        public string Description { get; set; }
+
+        public TaskProgressDto(UserTask task)
+        {
+            Name = task.Name;
+            IsCompleted = task.IsCompleted;
+            Description = task.Description;
+        }
+
+        public TaskProgressDto(TeamTask task)
+        {
+            Name = task.Name;
+            IsCompleted = task.IsCompleted;
+            Description = task.Description;
+        }
+    }   
 }
