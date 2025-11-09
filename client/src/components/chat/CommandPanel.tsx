@@ -26,7 +26,11 @@ function CommandPanel({
                         onClick={() => onClick(cmd.name)}
                     >
                         <span className="text-[#00D1FF] font-mono">{cmd.name}</span>
-                        <span className="text-gray-400 text-sm ml-2">- {cmd.description}</span>
+                        <div className="text-gray-400 text-sm ml-2">
+                            {cmd.description.map((line, i) => (
+                                <div key={i}>- {line}</div>
+                            ))}
+                        </div>
                     </div>
                 ))}
             </div>

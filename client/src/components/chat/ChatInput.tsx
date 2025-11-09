@@ -1,21 +1,63 @@
 import { useEffect, useState } from "react";
 import type { Command } from "../../apiClient/chat/types";
 import CommandPanel from "./CommandPanel";
+import { validateBookDate } from "../../apiClient/chat/validators";
+import DateTimePicker from "./DateTimePicker";
+import toast from "react-hot-toast";
 
 interface ChatInputProps {
-    onSend: (message: string) => void;
+    onMessageSend: (message: string) => void;
+    onBookMeeting: (time: string) => void;
 }
 
-function ChatInput({ onSend }: ChatInputProps) {
+function ChatInput({ onMessageSend, onBookMeeting }: ChatInputProps) {
     const [message, setMessage] = useState<string>("");
     const [showCommands, setShowCommands] = useState<boolean>(false);
+    const [showDatePicker, setshowDatePicker] = useState<boolean>(false);
     const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
     const commands: Command[] = [
-        { name: "/help", description: "Get more informations"},
-        { name: "/book [MM:DD:HH:MM]", description: "Book meeting"}
+        { 
+            name: "/book", 
+            description: [
+                "Book meeting.",
+                "Format: MM:DD:HH:MM (e.g., 12:25:14:30).",
+                "Leave blank to open date picker."
+            ],
+            args: ["MM:DD:HH:MM"],
+            validator: validateBookDate,
+            handler: (args: string[]) => {
+                onBookMeeting(args[0]);
+            }
+        }
     ];
 
+    const executeCommand = (command: Command, args: string[]): boolean => {
+        if (!command.validator) {
+            command.handler(args);
+            return true;
+        }
+       
+        const validation = command.validator(args);
+        if (!validation.valid) {
+            toast.error(validation.error || "Invalid command");
+            return false;
+        }
+    
+        command.handler(args);
+        return true;
+    };  
+
+    const findCommand = (message: string): Command | null => {
+        const commandName = message.trim().split(" ")[0];
+        return commands.find(cmd => cmd.name === commandName) || null;
+    };
+
+    const getCommandArgs = (message: string): string[] => {
+        const parts = message.trim().split(" ");
+        return parts.slice(1);
+    };
+    
     const resetCommandState = () => {
         setShowCommands(false);
         setSelectedIndex(0);
@@ -23,10 +65,34 @@ function ChatInput({ onSend }: ChatInputProps) {
     
     const handleSubmit = () => {
         if (!message.trim()) return;
+        
+        const command = findCommand(message);
 
-        onSend(message);
-        setMessage("");
-        resetCommandState();
+        if (!command) {
+            onMessageSend(message);
+            setMessage("");
+            resetCommandState();
+            return;
+        }
+
+        const args = getCommandArgs(message);
+        if (args.length === 0) {
+            setshowDatePicker(true);
+            setMessage(prev => prev.trim());
+            return;
+        }
+
+        const success = executeCommand(command, args);
+        if (success) {
+            setMessage("");
+            resetCommandState();
+        }
+    };
+
+    const handleDateSelect = (dateTime: string) => {
+        console.log("Selected date/time:", dateTime);
+        setshowDatePicker(false);
+        setMessage(prev => `${prev} ${dateTime}`);
     };
 
     const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -66,8 +132,6 @@ function ChatInput({ onSend }: ChatInputProps) {
         resetCommandState();
     };
 
-
-    // if user is sending command then it should be only visible for him
     useEffect(() => {
         const startsWithSlash = message.startsWith("/");
         const isCompleteCommand = commands.some(cmd =>
@@ -89,6 +153,13 @@ function ChatInput({ onSend }: ChatInputProps) {
                     selectCommand={selectCommand}
                     commands={commands}
                     selectedIndex={selectedIndex} />
+            )}
+
+            {showDatePicker && (
+                <DateTimePicker 
+                    onDateSelect={handleDateSelect}
+                    onClose={() => setshowDatePicker(false)}
+                />
             )}
             
             {/* Input Panel */}
