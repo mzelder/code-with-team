@@ -1,6 +1,8 @@
 using api.Data;
+using api.Hubs;
 using api.Services;
 using api.Services.Interfaces;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -47,7 +49,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddDataProtection();
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(options =>
+{
+    options.AddFilter<LobbyAuthorizationFilter>();
+});
+
 builder.Services.AddScoped<IMatchmakingService, MatchmakingService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IGithubAppService, GithubAppService>();
@@ -55,6 +61,7 @@ builder.Services.AddScoped<IGithubBotService, GithubBotService>();
 builder.Services.AddScoped<IGithubUserService, GithubUserService>();
 builder.Services.AddScoped<ITeamRepositoryService, TeamRepositoryService>();
 builder.Services.AddScoped<ITaskProgressService, TaskProgressService>();
+builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddHostedService<api.Services.Hosted.MatchmakingBackgroundService>();
 
 var app = builder.Build();

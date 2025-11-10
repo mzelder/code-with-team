@@ -25,6 +25,8 @@ namespace api.Data
         public DbSet<TeamTask> TeamTasks { get; set; }
         public DbSet<TeamTaskProgress> TeamTaskProgresses { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<MeetingProposal> MeetingProposals { get; set; }
+        public DbSet<MeetingVote> MeetingVotes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -102,6 +104,18 @@ namespace api.Data
                 .HasOne(ttp => ttp.Lobby)
                 .WithOne(l => l.TeamTaskProgress)
                 .HasForeignKey<TeamTaskProgress>(ttp => ttp.LobbyId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<MeetingVote>()
+                .HasOne(mv => mv.User)
+                .WithMany()
+                .HasForeignKey(mv => mv.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<MeetingVote>()
+                .HasOne(mv => mv.MeetingProposal)
+                .WithMany(mp => mp.Votes)
+                .HasForeignKey(mv => mv.MeetingProposalId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<User>()

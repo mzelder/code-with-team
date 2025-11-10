@@ -1,10 +1,12 @@
 import * as signalR from "@microsoft/signalr";
-import type { ChatMessageDto } from "../apiClient/chat/dtos";
+import type { ChatMessageDto, MeetingProposalDto } from "../apiClient/chat/dtos";
 
 class ChatService {
     private chatUrl : string = `${import.meta.env.VITE_API_BASE_URL}/hubs/chat`;
     private connection: signalR.HubConnection | null = null;
+    
     private messageHandlers: ((message: ChatMessageDto) => void)[] = [];
+    private proposalHandlers: ((proposal: MeetingProposalDto) => void)[] = [];
 
     async connect() {
         if (this.connection?.state === signalR.HubConnectionState.Connected) {
@@ -18,10 +20,13 @@ class ChatService {
             .withAutomaticReconnect()
             .build();
         
-        this.connection.on("ReceiveMessage", (username: string, message: string, date: string) => {
-            const chatMessage: ChatMessageDto = { username, message, date };
-            this.messageHandlers.forEach(handler => handler(chatMessage));
+        this.connection.on("ReceiveMessage", (message: ChatMessageDto) => {
+            this.messageHandlers.forEach(handler => handler(message));
         });
+
+        this.connection.on("ReceiveMeetingProposal", (proposal: MeetingProposalDto) => {
+            this.proposalHandlers.forEach(handler => handler(proposal));
+        })
 
         try {
             await this.connection.start();
@@ -42,9 +47,15 @@ class ChatService {
         }
     }
 
-    async sendMessage(lobbyId: string, userName: string, message: string) {
+    async sendMessage(message: ChatMessageDto, lobbyId: string) {
         if (this.connection?.state === signalR.HubConnectionState.Connected) {
-            await this.connection.invoke("SendMessage", lobbyId, userName, message);
+            await this.connection.invoke("SendMessage", message, lobbyId);
+        }
+    }
+
+    async sendMeetingProposal(proposal: MeetingProposalDto, lobbyId: string) {
+        if (this.connection?.state === signalR.HubConnectionState.Connected) {
+            await this.connection.invoke("SendMeetingProposal", proposal, lobbyId);
         }
     }
 
@@ -55,11 +66,20 @@ class ChatService {
     removeMessageHandler(handler: (message: ChatMessageDto) => void) {
         this.messageHandlers = this.messageHandlers.filter(h => h !== handler);
     }
+
+    onMeetingProposal(handler: (proposal: MeetingProposalDto) => void) {
+        this.proposalHandlers.push(handler);
+    }
+
+    removeMeetingProposal(handler: (proposal: MeetingProposalDto) => void) {
+        this.proposalHandlers = this.proposalHandlers.filter(h => h !== handler);
+    }    
     
     async disconnect() {
         if (this.connection) {
             await this.connection.stop();
             this.messageHandlers = [];
+            this.proposalHandlers = [];
         }
     }
 }

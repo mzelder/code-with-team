@@ -35,7 +35,7 @@ export const validateBookDate = (args: string[]): { valid: boolean; error?: stri
         if (minute < 0 || minute > 59) {
             return { valid: false, error: "Minute must be between 00-59"};
         }
-
+        
         return { valid: true };
     }
 

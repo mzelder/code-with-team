@@ -12,8 +12,8 @@ using api.Data;
 namespace api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251025105203_AddRepoUrlToLobby")]
-    partial class AddRepoUrlToLobby
+    [Migration("20251106185132_InitCreate")]
+    partial class InitCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -47,6 +47,36 @@ namespace api.Migrations
                             Id = 1,
                             Name = "Web Dev"
                         });
+                });
+
+            modelBuilder.Entity("api.Models.ChatMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("LobbyId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LobbyId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ChatMessages");
                 });
 
             modelBuilder.Entity("api.Models.Lobby", b =>
@@ -104,6 +134,67 @@ namespace api.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("LobbyMembers");
+                });
+
+            modelBuilder.Entity("api.Models.MeetingProposal", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("LobbyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("MeetingTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LobbyId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("MeetingProposals");
+                });
+
+            modelBuilder.Entity("api.Models.MeetingVote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("MeetingProposalId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Vote")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("VotedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MeetingProposalId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("MeetingVotes");
                 });
 
             modelBuilder.Entity("api.Models.ProgrammingLanguage", b =>
@@ -202,6 +293,171 @@ namespace api.Migrations
                         });
                 });
 
+            modelBuilder.Entity("api.Models.Tasks.TaskDefinitions", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Category")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TaskDefinitions");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Category = 1,
+                            Description = "",
+                            IsCompleted = false,
+                            Name = "Book meeting"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Category = 1,
+                            Description = "",
+                            IsCompleted = false,
+                            Name = "Attend your scheduled team meeting"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Category = 1,
+                            Description = "",
+                            IsCompleted = false,
+                            Name = "Break down the tasks"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Category = 0,
+                            Description = "",
+                            IsCompleted = false,
+                            Name = "Visit github repository"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Category = 0,
+                            Description = "",
+                            IsCompleted = false,
+                            Name = "Start coding"
+                        });
+                });
+
+            modelBuilder.Entity("api.Models.Tasks.TeamTask", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TeamTaskProgressId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamTaskProgressId");
+
+                    b.ToTable("TeamTasks");
+                });
+
+            modelBuilder.Entity("api.Models.Tasks.TeamTaskProgress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("LobbyId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LobbyId")
+                        .IsUnique();
+
+                    b.ToTable("TeamTaskProgresses");
+                });
+
+            modelBuilder.Entity("api.Models.Tasks.UserTask", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserTaskProgressId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserTaskProgressId");
+
+                    b.ToTable("UserTasks");
+                });
+
+            modelBuilder.Entity("api.Models.Tasks.UserTaskProgress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("LobbyMemberId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LobbyMemberId")
+                        .IsUnique();
+
+                    b.ToTable("UserTaskProgresses");
+                });
+
             modelBuilder.Entity("api.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -279,6 +535,25 @@ namespace api.Migrations
                     b.ToTable("UserSelections");
                 });
 
+            modelBuilder.Entity("api.Models.ChatMessage", b =>
+                {
+                    b.HasOne("api.Models.Lobby", "Lobby")
+                        .WithMany()
+                        .HasForeignKey("LobbyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("api.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lobby");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("api.Models.LobbyMember", b =>
                 {
                     b.HasOne("api.Models.Lobby", "Lobby")
@@ -292,6 +567,44 @@ namespace api.Migrations
                         .IsRequired();
 
                     b.Navigation("Lobby");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("api.Models.MeetingProposal", b =>
+                {
+                    b.HasOne("api.Models.Lobby", "Lobby")
+                        .WithMany()
+                        .HasForeignKey("LobbyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("api.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lobby");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("api.Models.MeetingVote", b =>
+                {
+                    b.HasOne("api.Models.MeetingProposal", "MeetingProposal")
+                        .WithMany("Votes")
+                        .HasForeignKey("MeetingProposalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("api.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("MeetingProposal");
 
                     b.Navigation("User");
                 });
@@ -316,6 +629,50 @@ namespace api.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("api.Models.Tasks.TeamTask", b =>
+                {
+                    b.HasOne("api.Models.Tasks.TeamTaskProgress", "TeamTaskProgress")
+                        .WithMany("TeamTasks")
+                        .HasForeignKey("TeamTaskProgressId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TeamTaskProgress");
+                });
+
+            modelBuilder.Entity("api.Models.Tasks.TeamTaskProgress", b =>
+                {
+                    b.HasOne("api.Models.Lobby", "Lobby")
+                        .WithOne("TeamTaskProgress")
+                        .HasForeignKey("api.Models.Tasks.TeamTaskProgress", "LobbyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lobby");
+                });
+
+            modelBuilder.Entity("api.Models.Tasks.UserTask", b =>
+                {
+                    b.HasOne("api.Models.Tasks.UserTaskProgress", "UserTaskProgress")
+                        .WithMany("UserTasks")
+                        .HasForeignKey("UserTaskProgressId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("UserTaskProgress");
+                });
+
+            modelBuilder.Entity("api.Models.Tasks.UserTaskProgress", b =>
+                {
+                    b.HasOne("api.Models.LobbyMember", "LobbyMember")
+                        .WithOne("UserTaskProgress")
+                        .HasForeignKey("api.Models.Tasks.UserTaskProgress", "LobbyMemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LobbyMember");
                 });
 
             modelBuilder.Entity("api.Models.UserLanguage", b =>
@@ -379,10 +736,24 @@ namespace api.Migrations
                     b.Navigation("UserSelections");
                 });
 
+            modelBuilder.Entity("api.Models.Lobby", b =>
+                {
+                    b.Navigation("TeamTaskProgress")
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("api.Models.LobbyMember", b =>
                 {
                     b.Navigation("UserSelection")
                         .IsRequired();
+
+                    b.Navigation("UserTaskProgress")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("api.Models.MeetingProposal", b =>
+                {
+                    b.Navigation("Votes");
                 });
 
             modelBuilder.Entity("api.Models.ProgrammingLanguage", b =>
@@ -395,6 +766,16 @@ namespace api.Migrations
                     b.Navigation("ProgrammingLanguages");
 
                     b.Navigation("UserSelections");
+                });
+
+            modelBuilder.Entity("api.Models.Tasks.TeamTaskProgress", b =>
+                {
+                    b.Navigation("TeamTasks");
+                });
+
+            modelBuilder.Entity("api.Models.Tasks.UserTaskProgress", b =>
+                {
+                    b.Navigation("UserTasks");
                 });
 
             modelBuilder.Entity("api.Models.User", b =>
