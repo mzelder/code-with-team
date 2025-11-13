@@ -1,10 +1,10 @@
-import { type MeetingProposalDto } from "../../apiClient/chat/dtos";
+import { type MeetingProposalDto, MeetingProposalStatus } from "../../apiClient/chat/dtos";
 import UserAvatar from "../shared/UserAvatar";
 
 interface MeetingProposalCardProps {
     proposal: MeetingProposalDto;
     currentUser: string;
-    onVote: (proposalId: string, accept: boolean) => void;
+    onVote: (proposalId: number, accept: boolean) => void;
 }
 
 function MeetingProposalCard({ proposal, currentUser, onVote }: MeetingProposalCardProps) {
@@ -12,28 +12,58 @@ function MeetingProposalCard({ proposal, currentUser, onVote }: MeetingProposalC
     const acceptedVotes = proposal.votes.filter(v => v.isAccepted === true);
     const rejectedVotes = proposal.votes.filter(v => v.isAccepted === false);
 
+    const getCardBorderClass = () => {
+        switch (proposal.status) {
+            case MeetingProposalStatus.Accepted:
+                return "border-green-500";
+            case MeetingProposalStatus.Rejected:
+                return "border-red-500";
+            default:
+                return "border-gray-700";
+        }
+    };
+
+    const getStatusInfo = () => {
+        switch (proposal.status) {
+            case MeetingProposalStatus.Accepted:
+                return { text: "Accepted", color: "text-green-400" };
+            case MeetingProposalStatus.Rejected:
+                return { text: "Rejected", color: "text-red-400" };
+            default:
+                return { text: "Pending", color: "text-yellow-400" };
+        }
+    };
+
+    const canVote = proposal.status === MeetingProposalStatus.Pending && !userVote;
+    const statusInfo = getStatusInfo();
+
     return (
-        <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-xl p-5 mx-4 shadow-lg hover:shadow-xl transition-shadow">
-            <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-700">
-                <div className="bg-blue-500/20 p-2 rounded-lg">
-                    <svg 
-                        className="w-6 h-6 text-blue-400" 
-                        fill="none" 
-                        stroke="currentColor" 
-                        viewBox="0 0 24 24"
-                    >
-                        <path 
-                            strokeLinecap="round" 
-                            strokeLinejoin="round" 
-                            strokeWidth={2} 
-                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
-                        />
-                    </svg>
+        <div className={`bg-gradient-to-br from-gray-800 to-gray-900 border-2 ${getCardBorderClass()} rounded-xl p-5 mx-4 shadow-lg hover:shadow-xl transition-shadow`}>
+            <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-gray-700">
+                <div className="flex items-center gap-3">
+                    <div className="bg-blue-500/20 p-2 rounded-lg">
+                        <svg 
+                            className="w-6 h-6 text-blue-400" 
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                        >
+                            <path 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round" 
+                                strokeWidth={2} 
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
+                            />
+                        </svg>
+                    </div>
+                    <div>
+                        <span className="font-bold text-blue-400 text-lg block">Meeting Proposal</span>
+                        <span className="text-xs text-gray-400">Proposed by {proposal.username}</span>
+                    </div>
                 </div>
-                <div>
-                    <span className="font-bold text-blue-400 text-lg block">Meeting Proposal</span>
-                    <span className="text-xs text-gray-400">Proposed by {proposal.username}</span>
-                </div>
+                <span className={`text-sm font-semibold ${statusInfo.color}`}>
+                    {statusInfo.text}
+                </span>
             </div>
             
             <div className="mb-4 bg-gray-950/50 border border-gray-700 rounded-lg p-4">
@@ -42,17 +72,10 @@ function MeetingProposalCard({ proposal, currentUser, onVote }: MeetingProposalC
                     <p className="text-xs text-gray-400 uppercase tracking-wider">Scheduled Time</p>
                 </div>
                 <p className="text-xl font-bold text-white mb-2">
-                    {new Date(proposal.meetingTime).toLocaleString('en-US', {
-                        weekday: 'short',
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    })}
+                    {proposal.meetingTime}
                 </p>
                 <p className="text-xs text-gray-500">
-                    Created {new Date(proposal.createdAt).toLocaleString()}
+                    Created {proposal.createdAt}
                 </p>
             </div>
 
@@ -86,7 +109,6 @@ function MeetingProposalCard({ proposal, currentUser, onVote }: MeetingProposalC
                     )}
                 </div>
 
-                {/* Rejected Votes */}
                 <div className="bg-gray-950/30 rounded-lg p-3 border border-gray-700/50">
                     <div className="flex items-center gap-2 mb-2">
                         <div className="w-3 h-3 bg-red-500 rounded-full"></div>
@@ -130,10 +152,10 @@ function MeetingProposalCard({ proposal, currentUser, onVote }: MeetingProposalC
                         </span>
                     </div>
                 </div>
-            ) : (
+            ) : canVote ? (
                 <div className="flex gap-3">
                     <button
-                        onClick={() => onVote(proposal.meetingTime, true)}
+                        onClick={() => onVote(proposal.id, true)}
                         className="flex-1 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white py-3 px-4 rounded-lg font-semibold transition-all shadow-lg hover:shadow-green-500/50 border border-green-400/30"
                     >
                         <span className="flex items-center justify-center gap-2">
@@ -142,7 +164,7 @@ function MeetingProposalCard({ proposal, currentUser, onVote }: MeetingProposalC
                         </span>
                     </button>
                     <button
-                        onClick={() => onVote(proposal.meetingTime, false)}
+                        onClick={() => onVote(proposal.id, false)}
                         className="flex-1 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white py-3 px-4 rounded-lg font-semibold transition-all shadow-lg hover:shadow-red-500/50 border border-red-400/30"
                     >
                         <span className="flex items-center justify-center gap-2">
@@ -151,7 +173,7 @@ function MeetingProposalCard({ proposal, currentUser, onVote }: MeetingProposalC
                         </span>
                     </button>
                 </div>
-            )}
+            ) : null}
         </div>
     );
 }

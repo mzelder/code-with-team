@@ -2,6 +2,7 @@
 using api.Data;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using api.Utils;
 
 namespace Tests
 {
@@ -14,7 +15,8 @@ namespace Tests
                 .Options;
 
             var context = new AppDbContext(options);
-            return new ChatService(context);
+            var timeHelper = new MeetingTimeHelper();
+            return new ChatService(context, timeHelper);
         }
 
         [Fact]

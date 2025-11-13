@@ -2,6 +2,7 @@
 using api.Dtos.Chat;
 using api.Models;
 using api.Services.Interfaces;
+using api.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,10 +11,17 @@ namespace api.Services
     public class ChatService : IChatService
     {
         private readonly AppDbContext _context;
+        private readonly IMeetingTimeHelper timeHelper;
 
-        public ChatService(AppDbContext context)
+        public ChatService(AppDbContext context, IMeetingTimeHelper timeHelper)
         {
             _context = context;
+            this.timeHelper = timeHelper;
+        }
+
+        public bool IsValidMeetingTime(string proposedTime)
+        {
+            return timeHelper.IsValidMeetingTime(proposedTime);
         }
 
         private Lobby GetLobbyByUserId(int userId)
@@ -55,8 +63,10 @@ namespace api.Services
                 .Where(mp => mp.LobbyId == lobby.Id)
                 .Select(mp => new MeetingProposalDto
                 {
+                    Id = mp.Id,
                     Username = mp.User.Username,
                     MeetingTime = mp.MeetingTime.ToString("g"),
+                    Status = mp.Status,
                     CreatedAt = mp.CreatedAt.ToString("g"),
                     Votes = mp.Votes.Select(v => new MeetingVoteDto
                     {
@@ -102,9 +112,9 @@ namespace api.Services
             };
         }
 
-        public async Task<MeetingProposalDto> SaveMeetingProposalAsync(MeetingProposalDto proposalDto)
+        public async Task<MeetingProposalDto> SaveMeetingProposalAsync(CreateMeetingProposalDto proposalDto)
         {
-            if (!IsValidMeetingTime(proposalDto.MeetingTime))
+            if (!timeHelper.IsValidMeetingTime(proposalDto.MeetingTime))
             {
                 throw new Exception("Invalid meeting time format");
             }
@@ -121,7 +131,7 @@ namespace api.Services
                 throw new Exception("Lobby is not existing");
             }
 
-            var meetingTimeDate = ParseMeetingTime(proposalDto.MeetingTime);
+            var meetingTimeDate = timeHelper.ParseMeetingTime(proposalDto.MeetingTime);
             var meetingProposal = new MeetingProposal
             {
                 Lobby = lobby,
@@ -144,9 +154,11 @@ namespace api.Services
 
             return new MeetingProposalDto
             {
+                Id = meetingProposal.Id,
                 Username = meetingProposal.User.Username,
                 MeetingTime = meetingProposal.MeetingTime.ToString("g"),
                 CreatedAt = DateTime.UtcNow.ToString("g"),
+                Status = MeetingProposalStatus.Pending,
                 Votes = [new() {
                     Username = meetingProposal.User.Username,
                     IsAccepted = true
@@ -154,35 +166,75 @@ namespace api.Services
             };
         }
 
-        public bool IsValidMeetingTime(string proposedTime)
+        public async Task<MeetingProposalDto> SaveMeetingVoteAsync(MeetingVoteDto voteDto, int proposalId)
         {
-            var now = DateTime.UtcNow;
-            var proposed = ParseMeetingTime(proposedTime);
-            var maxTime = now.AddDays(7);
-            return proposed > now && proposed <= maxTime;
-        }
+            var proposal = await _context.MeetingProposals
+                .Where(mp => mp.Id == proposalId)
+                .FirstOrDefaultAsync()
+                ?? throw new Exception("Meeting proposal does not exist");
 
-        public DateTime ParseMeetingTime(string meetingTimeString)
-        {
-            // Expected format: MM:DD:hh:mm
-            var parts = meetingTimeString.Split(':');
+            var user = await _context.Users.
+                FirstOrDefaultAsync(u => u.Username == voteDto.Username)
+                ?? throw new Exception("User is not existing");
 
-            if (parts.Length != 4)
+            var lobby = GetLobbyByUserId(user.Id);
+
+            if (proposal.LobbyId != lobby.Id)
             {
-                throw new FormatException("Invalid meeting time format. Expected MM:DD:hh:mm");
+                throw new UnauthorizedAccessException("Meeting proposal does not belong to user's lobby");
             }
 
-            if (!int.TryParse(parts[0], out int month) ||
-                !int.TryParse(parts[1], out int day) ||
-                !int.TryParse(parts[2], out int hour) ||
-                !int.TryParse(parts[3], out int minute))
+            var hasVoted = await _context.MeetingVotes
+                .AnyAsync(v => v.MeetingProposalId == proposalId && v.UserId == user.Id);   
+            if (hasVoted)
             {
-                throw new FormatException("Invalid meeting time format. All parts must be numbers.");
+                throw new Exception("User already voted on this proposal");
             }
 
-            int year = DateTime.UtcNow.Year;
+            var vote = new MeetingVote
+            {
+                MeetingProposal = proposal,
+                User = user,
+                Vote = voteDto.IsAccepted,
+                VotedAt = DateTime.UtcNow
+            };
+            _context.MeetingVotes.Add(vote);
 
-            return new DateTime(year, month, day, hour, minute, 0, DateTimeKind.Utc);
+            if (!voteDto.IsAccepted)
+            {
+                proposal.Status = MeetingProposalStatus.Rejected;
+            } else
+            {
+                var positiveVotesCount = await _context.MeetingVotes
+                    .CountAsync(v => v.MeetingProposalId == proposalId && v.Vote)
+                    + 1;
+
+                if (positiveVotesCount == 4)
+                {
+                    proposal.Status = MeetingProposalStatus.Accepted;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            var votes = await _context.MeetingVotes
+                .Where(v => v.MeetingProposalId == proposalId)
+                .Select(v => new MeetingVoteDto
+                {
+                    Username = v.User.Username,
+                    IsAccepted = v.Vote
+                })
+                .ToArrayAsync();
+
+            return new MeetingProposalDto
+            {
+                Id = proposal.Id,
+                Username = user.Username,
+                MeetingTime = proposal.MeetingTime.ToString("g"),
+                CreatedAt = proposal.CreatedAt.ToString("g"),
+                Status = proposal.Status,
+                Votes = votes
+            };
         }
     }
 }

@@ -3,6 +3,6 @@
     public class MeetingVoteDto
     {
         public string Username { get; set; }
-        public bool? IsAccepted { get; set; }
+        public bool IsAccepted { get; set; }
     }
 }

@@ -23,7 +23,7 @@ namespace api.Models
         public DateTime MeetingTime { get; set; }
         public DateTime CreatedAt { get; set; }
 
-        public MeetingProposalStatus Status { get; set; }
+        public MeetingProposalStatus Status { get; set; } = MeetingProposalStatus.Pending;
 
         public ICollection<MeetingVote> Votes { get; set; }
     }

@@ -90,7 +90,6 @@ function ChatInput({ onMessageSend, onBookMeeting }: ChatInputProps) {
     };
 
     const handleDateSelect = (dateTime: string) => {
-        console.log("Selected date/time:", dateTime);
         setshowDatePicker(false);
         setMessage(prev => `${prev} ${dateTime}`);
     };

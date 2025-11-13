@@ -3,7 +3,7 @@ import ChatBubble from "./ChatBubble";
 import ChatInput from "./ChatInput";
 import MeetingProposalCard from "./MeetingProposalCard";
 import { chatService } from "../../services/chatService";
-import { type MeetingProposalDto, type ChatMessageDto } from "../../apiClient/chat/dtos";
+import { type MeetingProposalDto, type ChatMessageDto, type MeetingVoteDto, type CreateMeetingProposalDto } from "../../apiClient/chat/dtos";
 import toast from "react-hot-toast";
 import { getLobbyMessages, getMeetingProposals } from "../../apiClient/chat/chat";
 
@@ -53,8 +53,19 @@ function ChatContainer({ lobbyId, currentUser }: ChatContainerProps) {
         const handleMessage = (message: ChatMessageDto) => {
             setMessages(prev => [...prev, message]);
         };
+        
+        // add proposal or update depends if the proposal exist
         const handleMeetingProposal = (proposal: MeetingProposalDto) => {
-            setMeetingProposals(prev => [...prev, proposal]);
+            setMeetingProposals(prev => {
+                const existingIndex = prev.findIndex(p => p.id === proposal.id);
+                if (existingIndex >= 0) {
+                    const updated = [...prev];
+                    updated[existingIndex] = proposal;
+                    return updated;
+                } else {
+                    return [...prev, proposal];
+                }
+            });
         }
 
         initChatAndProposals();
@@ -63,7 +74,7 @@ function ChatContainer({ lobbyId, currentUser }: ChatContainerProps) {
 
         return () => {
             chatService.removeMessageHandler(handleMessage);
-            chatService.removeMeetingProposal(handleMeetingProposal);
+            chatService.removeMeetingProposalHandler(handleMeetingProposal);
             chatService.leaveLobby(lobbyId);
         };
     }, [lobbyId]);
@@ -82,17 +93,19 @@ function ChatContainer({ lobbyId, currentUser }: ChatContainerProps) {
     };
 
     const handleMeetingProposal = async (meetingTime: string) => {
-        const proposalDto: MeetingProposalDto = {
+        const proposalDto: CreateMeetingProposalDto = {
             username: currentUser,
             meetingTime: meetingTime,
-            createdAt: "",
-            votes: []
         };
         await chatService.sendMeetingProposal(proposalDto, lobbyId);
     };
 
-    const handleVote = (proposalId: string, accept: boolean) => {
-        console.log("Vote clicked:", proposalId, accept);
+    const handleSendVote = async (proposalId: number, accept: boolean) => {
+        const vote: MeetingVoteDto = {
+            username: currentUser,
+            isAccepted: accept
+        };
+        await chatService.sendVote(vote, lobbyId, proposalId);
     };
 
     return (
@@ -102,7 +115,7 @@ function ChatContainer({ lobbyId, currentUser }: ChatContainerProps) {
                     isMessage(item) 
                     ?
                         <ChatBubble
-                            key={index}
+                            key={`msg-${index}`}
                             userName={item.username}
                             date={item.createdAt}
                             message={item.message}
@@ -110,9 +123,10 @@ function ChatContainer({ lobbyId, currentUser }: ChatContainerProps) {
                         />
                     :
                         <MeetingProposalCard
+                            key={`proposal-${index}`}
                             proposal={item}
                             currentUser={currentUser}
-                            onVote={handleVote}
+                            onVote={handleSendVote}
                         />
                 ))}
                 <div ref={messagesEndRef} />

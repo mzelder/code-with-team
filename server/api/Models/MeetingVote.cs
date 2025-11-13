@@ -9,8 +9,7 @@
         
         public int UserId { get; set; }
         public User User { get; set; }
-        
-        public bool? Vote { get; set; }
+        public bool Vote { get; set; }
         public DateTime VotedAt { get; set; }
     }
 }

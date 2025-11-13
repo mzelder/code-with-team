@@ -6,6 +6,9 @@ using api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
+// filter checking: 
+// - if user is in the lobby when sending message / proposal / vote
+// - if username matches the authenticated user when sending message / proposal / vote
 namespace api.Hubs
 {
     [Authorize]
@@ -20,16 +23,38 @@ namespace api.Hubs
 
         public async Task SendMessage(ChatMessageDto messageDto, string lobbyId)
         {
-            var savedMessage = await _chatService.SaveMessageAsync(messageDto);
-            await Clients.Group(lobbyId).SendAsync("ReceiveMessage", savedMessage); 
+            try
+            {
+                var savedMessage = await _chatService.SaveMessageAsync(messageDto);
+                await Clients.Group(lobbyId).SendAsync("ReceiveMessage", savedMessage);
+            }
+            catch (Exception ex)
+            {
+                await Clients.Caller.SendAsync("Error", ex.Message);
+                return;
+            }
         }
 
-        public async Task SendMeetingProposal(MeetingProposalDto proposalDto, string lobbyId)
+        public async Task SendMeetingProposal(CreateMeetingProposalDto proposalDto, string lobbyId)
         {
             try
             {
                 var savedProposal = await _chatService.SaveMeetingProposalAsync(proposalDto);
                 await Clients.Group(lobbyId).SendAsync("ReceiveMeetingProposal", savedProposal);
+            }
+            catch (Exception ex)
+            {
+                await Clients.Caller.SendAsync("Error", ex.Message);
+                return;
+            }
+        }
+
+        public async Task SendVote(MeetingVoteDto voteDto, string lobbyId, int proposalId)
+        {
+            try
+            {
+                var updatedProposal = await _chatService.SaveMeetingVoteAsync(voteDto, proposalId);
+                await Clients.Group(lobbyId).SendAsync("ReceiveMeetingProposal", updatedProposal);
             }
             catch (Exception ex)
             {

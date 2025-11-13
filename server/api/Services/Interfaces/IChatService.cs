@@ -10,7 +10,7 @@ namespace api.Services.Interfaces
         Task<IEnumerable<ChatMessageDto>> GetMessagesAsync(int userId);
         Task<IEnumerable<MeetingProposalDto>> GetMeetingProposalsAsync(int userId);
         Task<ChatMessageDto> SaveMessageAsync(ChatMessageDto messageDto);
-        Task<MeetingProposalDto> SaveMeetingProposalAsync(MeetingProposalDto proposalDto);
-        bool IsValidMeetingTime(string proposedTime);
+        Task<MeetingProposalDto> SaveMeetingProposalAsync(CreateMeetingProposalDto proposalDto);
+        Task<MeetingProposalDto> SaveMeetingVoteAsync(MeetingVoteDto voteDto, int proposalId);
     }
 }

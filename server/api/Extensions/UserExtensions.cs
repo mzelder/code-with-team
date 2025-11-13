@@ -31,5 +31,15 @@ namespace api.Extensions
             }
             return int.Parse(userIdClaim.Value);
         }
+
+        public static string GetCurrentUsername(this ClaimsPrincipal user)
+        {
+            var usernameClaim = user.FindFirst(ClaimTypes.Name);
+            if (usernameClaim == null)
+            {
+                throw new UnauthorizedAccessException("Username not found in claims");
+            }
+            return usernameClaim.Value;
+        }
     }
 }

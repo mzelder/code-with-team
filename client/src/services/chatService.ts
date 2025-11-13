@@ -1,5 +1,5 @@
 import * as signalR from "@microsoft/signalr";
-import type { ChatMessageDto, MeetingProposalDto } from "../apiClient/chat/dtos";
+import type { ChatMessageDto, CreateMeetingProposalDto, MeetingProposalDto, MeetingVoteDto } from "../apiClient/chat/dtos";
 
 class ChatService {
     private chatUrl : string = `${import.meta.env.VITE_API_BASE_URL}/hubs/chat`;
@@ -20,13 +20,17 @@ class ChatService {
             .withAutomaticReconnect()
             .build();
         
+        this.connection.on("Error", (error: string) => {
+            console.error(error);
+        });
+        
         this.connection.on("ReceiveMessage", (message: ChatMessageDto) => {
             this.messageHandlers.forEach(handler => handler(message));
         });
 
         this.connection.on("ReceiveMeetingProposal", (proposal: MeetingProposalDto) => {
             this.proposalHandlers.forEach(handler => handler(proposal));
-        })
+        });
 
         try {
             await this.connection.start();
@@ -53,9 +57,15 @@ class ChatService {
         }
     }
 
-    async sendMeetingProposal(proposal: MeetingProposalDto, lobbyId: string) {
+    async sendMeetingProposal(proposal: CreateMeetingProposalDto, lobbyId: string) {
         if (this.connection?.state === signalR.HubConnectionState.Connected) {
             await this.connection.invoke("SendMeetingProposal", proposal, lobbyId);
+        }
+    }
+
+    async sendVote(vote: MeetingVoteDto, lobbyId: string, proposalId: number) {
+        if (this.connection?.state === signalR.HubConnectionState.Connected) {
+            await this.connection.invoke("SendVote", vote, lobbyId, proposalId);
         }
     }
 
@@ -71,10 +81,10 @@ class ChatService {
         this.proposalHandlers.push(handler);
     }
 
-    removeMeetingProposal(handler: (proposal: MeetingProposalDto) => void) {
+    removeMeetingProposalHandler(handler: (proposal: MeetingProposalDto) => void) {
         this.proposalHandlers = this.proposalHandlers.filter(h => h !== handler);
-    }    
-    
+    }
+      
     async disconnect() {
         if (this.connection) {
             await this.connection.stop();
