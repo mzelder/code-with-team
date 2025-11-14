@@ -1,3 +1,4 @@
+import { formatMessageDate } from "../../apiClient/chat/formatDates";
 import UserAvatar from "../shared/UserAvatar";
 
 interface ChatBubbleProps {
@@ -13,12 +14,14 @@ function ChatBubble({
     message,
     isCurrentUser = false
 }: ChatBubbleProps) {
+    const formatedDate = formatMessageDate(date);
+    
     if (isCurrentUser) {
         return (
             <div className="flex items-start gap-2 justify-end">
                 <div className="flex flex-col gap-1 max-w-xs items-end">
                     <div className="flex items-center gap-2">
-                        <time className="text-xs opacity-50 text-white">{date}</time>
+                        <time className="text-xs opacity-50 text-white">{formatedDate}</time>
                         <span className="text-sm font-semibold text-white">{userName}</span>
                     </div>
                     <div className="bg-[#00D1FF] text-black rounded-lg px-4 py-2 break-all w-fit">
@@ -40,7 +43,7 @@ function ChatBubble({
             <div className="flex flex-col gap-1 max-w-xs">
                 <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-white">{userName}</span>
-                    <time className="text-xs opacity-50 text-white">{date}</time>
+                    <time className="text-xs opacity-50 text-white">{formatedDate}</time>
                 </div>
                 <div className="bg-gray-700 text-white rounded-lg px-4 py-2 break-all w-fit">
                     {message}

@@ -38,7 +38,7 @@ namespace api.Services
         }
 
         
-        public async Task<IEnumerable<ChatMessageDto>> GetMessagesAsync(int userId)
+        public async Task<IEnumerable<ChatMessageDto>> GetMessagesAsync(int userId) 
         {
             var lobby = GetLobbyByUserId(userId);
 
@@ -48,7 +48,7 @@ namespace api.Services
                 {
                     Username = m.User.Username,
                     Message = m.Message,
-                    CreatedAt = m.CreatedAt.ToString("g")
+                    CreatedAt = m.CreatedAt.ToString("O")   
                 })
                 .ToListAsync();
 
@@ -65,9 +65,9 @@ namespace api.Services
                 {
                     Id = mp.Id,
                     Username = mp.User.Username,
-                    MeetingTime = mp.MeetingTime.ToString("g"),
+                    MeetingTime = mp.MeetingTime.ToString("O"),
                     Status = mp.Status,
-                    CreatedAt = mp.CreatedAt.ToString("g"),
+                    CreatedAt = mp.CreatedAt.ToString("O"),
                     Votes = mp.Votes.Select(v => new MeetingVoteDto
                     {
                         Username = v.User.Username,
@@ -107,8 +107,8 @@ namespace api.Services
             return new ChatMessageDto
             {
                 Username = user.Username,
-                Message = messageDto.Message,
-                CreatedAt = DateTime.UtcNow.ToString("g")
+                Message = messageDto.Message,   
+                CreatedAt = DateTime.UtcNow.ToString("O")
             };
         }
 
@@ -156,8 +156,8 @@ namespace api.Services
             {
                 Id = meetingProposal.Id,
                 Username = meetingProposal.User.Username,
-                MeetingTime = meetingProposal.MeetingTime.ToString("g"),
-                CreatedAt = DateTime.UtcNow.ToString("g"),
+                MeetingTime = meetingProposal.MeetingTime.ToString("O"),
+                CreatedAt = DateTime.UtcNow.ToString("O"),
                 Status = MeetingProposalStatus.Pending,
                 Votes = [new() {
                     Username = meetingProposal.User.Username,
@@ -230,8 +230,8 @@ namespace api.Services
             {
                 Id = proposal.Id,
                 Username = user.Username,
-                MeetingTime = proposal.MeetingTime.ToString("g"),
-                CreatedAt = proposal.CreatedAt.ToString("g"),
+                MeetingTime = proposal.MeetingTime.ToString("O"),
+                CreatedAt = proposal.CreatedAt.ToString("O"),
                 Status = proposal.Status,
                 Votes = votes
             };

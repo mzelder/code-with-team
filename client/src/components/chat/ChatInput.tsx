@@ -4,10 +4,11 @@ import CommandPanel from "./CommandPanel";
 import { validateBookDate } from "../../apiClient/chat/validators";
 import DateTimePicker from "./DateTimePicker";
 import toast from "react-hot-toast";
+import { parseBookDateToDate } from "../../apiClient/chat/formatDates";
 
 interface ChatInputProps {
     onMessageSend: (message: string) => void;
-    onBookMeeting: (time: string) => void;
+    onBookMeeting: (time: Date) => void;
 }
 
 function ChatInput({ onMessageSend, onBookMeeting }: ChatInputProps) {
@@ -27,7 +28,8 @@ function ChatInput({ onMessageSend, onBookMeeting }: ChatInputProps) {
             args: ["MM:DD:HH:MM"],
             validator: validateBookDate,
             handler: (args: string[]) => {
-                onBookMeeting(args[0]);
+                const localMeetingTime = parseBookDateToDate(args[0]); 
+                onBookMeeting(localMeetingTime);
             }
         }
     ];

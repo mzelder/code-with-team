@@ -22,7 +22,7 @@ function ChatContainer({ lobbyId, currentUser }: ChatContainerProps) {
             ...messages,
             ...meetingProposals,
         ];
-        
+
         return allItems.sort((a, b) => 
             new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
         );
@@ -92,10 +92,12 @@ function ChatContainer({ lobbyId, currentUser }: ChatContainerProps) {
         await chatService.sendMessage(messageDto, lobbyId);
     };
 
-    const handleMeetingProposal = async (meetingTime: string) => {
+    const handleMeetingProposal = async (localMeetingTime: Date) => {
+        const utcMeetingTime = localMeetingTime.toISOString();
+        
         const proposalDto: CreateMeetingProposalDto = {
             username: currentUser,
-            meetingTime: meetingTime,
+            meetingTime: utcMeetingTime,
         };
         await chatService.sendMeetingProposal(proposalDto, lobbyId);
     };

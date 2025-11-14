@@ -18,6 +18,7 @@ class ChatService {
                 withCredentials: true
             })
             .withAutomaticReconnect()
+            .configureLogging(signalR.LogLevel.Debug)
             .build();
         
         this.connection.on("Error", (error: string) => {

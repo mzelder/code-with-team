@@ -1,4 +1,5 @@
 import { type MeetingProposalDto, MeetingProposalStatus } from "../../apiClient/chat/dtos";
+import { formatProposalDate } from "../../apiClient/chat/formatDates";
 import UserAvatar from "../shared/UserAvatar";
 
 interface MeetingProposalCardProps {
@@ -11,6 +12,8 @@ function MeetingProposalCard({ proposal, currentUser, onVote }: MeetingProposalC
     const userVote = proposal.votes.find(v => v.username === currentUser);
     const acceptedVotes = proposal.votes.filter(v => v.isAccepted === true);
     const rejectedVotes = proposal.votes.filter(v => v.isAccepted === false);
+
+    
 
     const getCardBorderClass = () => {
         switch (proposal.status) {
@@ -72,10 +75,10 @@ function MeetingProposalCard({ proposal, currentUser, onVote }: MeetingProposalC
                     <p className="text-xs text-gray-400 uppercase tracking-wider">Scheduled Time</p>
                 </div>
                 <p className="text-xl font-bold text-white mb-2">
-                    {proposal.meetingTime}
+                    {formatProposalDate(proposal.meetingTime)}
                 </p>
                 <p className="text-xs text-gray-500">
-                    Created {proposal.createdAt}
+                    Created {formatProposalDate(proposal.createdAt)}
                 </p>
             </div>
 
