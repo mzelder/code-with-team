@@ -1,6 +1,7 @@
 ﻿using api.Data;
 using api.Dtos.Chat;
 using api.Models;
+using api.Models.Meetings;
 using api.Services.Interfaces;
 using api.Utils;
 using Microsoft.AspNetCore.Mvc;

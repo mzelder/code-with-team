@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System.ComponentModel.DataAnnotations;
 
-namespace api.Models
+namespace api.Models.Meetings
 {
     public enum MeetingProposalStatus
     {
@@ -26,5 +26,6 @@ namespace api.Models
         public MeetingProposalStatus Status { get; set; } = MeetingProposalStatus.Pending;
 
         public ICollection<MeetingVote> Votes { get; set; }
+        public Meeting Meeting { get; set; }
     }
 }

@@ -21,7 +21,7 @@ export async function apiRequest(method: HttpMethod, endpoit: string, data?: any
     return response.json();
 }
 
-export const apiGet = (endpoint: string) => apiRequest("GET", endpoint);
-export const apiPost = (endpoint: string, data?: any) => apiRequest("POST", endpoint, data);
-export const apiPut = (endpoint: string, data?: any) => apiRequest("PUT", endpoint, data);
-export const apiDelete = (endpoint: string, data?: any) => apiRequest("DELETE", endpoint, data);
+export const apiGet = async(endpoint: string) => await apiRequest("GET", endpoint);
+export const apiPost = async(endpoint: string, data?: any) => await apiRequest("POST", endpoint, data);
+export const apiPut = async(endpoint: string, data?: any) => await apiRequest("PUT", endpoint, data);
+export const apiDelete = async(endpoint: string, data?: any) => await apiRequest("DELETE", endpoint, data);

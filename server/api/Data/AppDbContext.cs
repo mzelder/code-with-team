@@ -1,4 +1,5 @@
 ﻿using api.Models;
+using api.Models.Meetings;
 using api.Models.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
@@ -27,6 +28,7 @@ namespace api.Data
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<MeetingProposal> MeetingProposals { get; set; }
         public DbSet<MeetingVote> MeetingVotes { get; set; }
+        public DbSet<Meeting> Meetings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -163,19 +165,19 @@ namespace api.Data
                 new TaskDefinitions
                 {
                     Id = 2,
-                    Name = "Attend your scheduled team meeting",
-                    Description = "",
-                    Category = TaskCategory.Team
-                },
-                new TaskDefinitions
-                {
-                    Id = 3,
                     Name = "Break down the tasks",
                     Description = "",
                     Category = TaskCategory.Team
                 },
-
+                
                 // User Tasks
+                new TaskDefinitions
+                {
+                    Id = 3,
+                    Name = "Attend your scheduled team meeting",
+                    Description = "",
+                    Category = TaskCategory.User
+                },
                 new TaskDefinitions
                 {
                     Id = 4,

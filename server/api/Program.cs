@@ -64,7 +64,10 @@ builder.Services.AddScoped<ITeamRepositoryService, TeamRepositoryService>();
 builder.Services.AddScoped<ITaskProgressService, TaskProgressService>();
 builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IMeetingTimeHelper, MeetingTimeHelper>();
+builder.Services.AddScoped<ITeamsMeetingService, TeamsMeetingService>();
+
 builder.Services.AddHostedService<api.Services.Hosted.MatchmakingBackgroundService>();
+builder.Services.AddHostedService<api.Services.Hosted.MeetingSchedulerBackgroundService>();
 
 var app = builder.Build();
 

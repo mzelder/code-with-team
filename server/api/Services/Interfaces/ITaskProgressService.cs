@@ -7,5 +7,8 @@ namespace api.Services.Interfaces
     {
         Task<IEnumerable<UserTask>> GetUserTaskProgressAsync(int userId);
         Task<IEnumerable<TeamTask>> GetTeamTaskProgressAsync(int userId);
+        
+        Task UpdateCreatedIssuesAsync(int lobbyId, TeamTask createdIssuesTask);
+        Task UpdateAttendInMeetingAsync(int userId);
     }
 }

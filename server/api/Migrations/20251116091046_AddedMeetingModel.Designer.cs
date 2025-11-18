@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using api.Data;
 
@@ -11,9 +12,11 @@ using api.Data;
 namespace api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251116091046_AddedMeetingModel")]
+    partial class AddedMeetingModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -354,15 +357,15 @@ namespace api.Migrations
                             Category = 1,
                             Description = "",
                             IsCompleted = false,
-                            Name = "Break down the tasks"
+                            Name = "Attend your scheduled team meeting"
                         },
                         new
                         {
                             Id = 3,
-                            Category = 0,
+                            Category = 1,
                             Description = "",
                             IsCompleted = false,
-                            Name = "Attend your scheduled team meeting"
+                            Name = "Break down the tasks"
                         },
                         new
                         {

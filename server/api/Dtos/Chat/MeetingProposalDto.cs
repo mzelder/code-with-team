@@ -1,4 +1,4 @@
-﻿using api.Models;
+﻿using api.Models.Meetings;
 using System.ComponentModel.DataAnnotations;
 
 namespace api.Dtos.Chat

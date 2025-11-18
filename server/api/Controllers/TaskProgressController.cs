@@ -44,5 +44,19 @@ namespace api.Controllers
                 return BadRequest(new ApiResponseDto(false, ex.Message));
             }
         }
+
+        [HttpPost("attend-meeting")]
+        public async Task<ActionResult<ApiResponseDto>> UpdateAttendInMeeting()
+        {
+            try
+            {
+                await _taskProgressService.UpdateAttendInMeetingAsync(GetCurrentUserId());
+                return Ok(new ApiResponseDto(true, "User task updated successfully."));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new ApiResponseDto(false, ex.Message));
+            }
+        }
     }
 }
