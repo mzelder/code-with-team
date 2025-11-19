@@ -1,6 +1,6 @@
+using api.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace api.Controllers
 {
@@ -8,16 +8,6 @@ namespace api.Controllers
     [ApiController]
     public abstract class BaseAuthorizedController : ControllerBase
     {
-        protected int GetCurrentUserId()
-        {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-
-            if (userIdClaim == null)
-            {
-                throw new UnauthorizedAccessException("User ID not found in claims");
-            }
-
-            return int.Parse(userIdClaim.Value);
-        }
+        protected int GetCurrentUserId() => User.GetCurrentUserId();
     }
 }

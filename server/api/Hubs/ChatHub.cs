@@ -1,49 +1,66 @@
 ﻿using api.Data;
+using api.Dtos.Chat;
 using api.Models;
+using api.Extensions;
+using api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
+// filter checking: 
+// - if user is in the lobby when sending message / proposal / vote
+// - if username matches the authenticated user when sending message / proposal / vote
 namespace api.Hubs
 {
     [Authorize]
     public class ChatHub : Hub
     {
-        private readonly AppDbContext _context;
+        private readonly IChatService _chatService;
 
-        public ChatHub(AppDbContext context)
+        public ChatHub(IChatService chatService)
         {
-            _context = context;
+            _chatService = chatService;
         }
 
-        public async Task SendMessage(string lobbyId, string userName, string message)
+        public async Task SendMessage(ChatMessageDto messageDto, string lobbyId)
         {
-            // ADD: deletaing messages from lobby after deleating lobby
-            
-            var timestamp = DateTime.UtcNow.ToString("HH:mm");
-            var user = _context.Users.FirstOrDefault(u => u.Username == userName);
-
-            if (user == null)
+            try
             {
-                throw new Exception("User is not existing");
+                var savedMessage = await _chatService.SaveMessageAsync(messageDto);
+                await Clients.Group(lobbyId).SendAsync("ReceiveMessage", savedMessage);
             }
-
-            if (!int.TryParse(lobbyId, out int lobbyIdInt))
+            catch (Exception ex)
             {
-                throw new Exception("Invalid lobby ID");
+                await Clients.Caller.SendAsync("Error", ex.Message);
+                return;
             }
+        }
 
-            var chatMessage = new ChatMessage
+        public async Task SendMeetingProposal(CreateMeetingProposalDto proposalDto, string lobbyId)
+        {
+            try
             {
-                LobbyId = lobbyIdInt,
-                UserId = user.Id,
-                Message = message,
-                CreatedAt = DateTime.UtcNow
-            };
+                var savedProposal = await _chatService.SaveMeetingProposalAsync(proposalDto);
+                await Clients.Group(lobbyId).SendAsync("ReceiveMeetingProposal", savedProposal);
+            }
+            catch (Exception ex)
+            {
+                await Clients.Caller.SendAsync("Error", ex.Message);
+                return;
+            }
+        }
 
-            _context.ChatMessages.Add(chatMessage);
-            await _context.SaveChangesAsync();
-
-            await Clients.Group(lobbyId).SendAsync("ReceiveMessage", userName, message, timestamp);
+        public async Task SendVote(MeetingVoteDto voteDto, string lobbyId, int proposalId)
+        {
+            try
+            {
+                var updatedProposal = await _chatService.SaveMeetingVoteAsync(voteDto, proposalId);
+                await Clients.Group(lobbyId).SendAsync("ReceiveMeetingProposal", updatedProposal);
+            }
+            catch (Exception ex)
+            {
+                await Clients.Caller.SendAsync("Error", ex.Message);
+                return;
+            }
         }
 
         public async Task JoinLobby(string lobbyId)

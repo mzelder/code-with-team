@@ -133,6 +133,90 @@ namespace api.Migrations
                     b.ToTable("LobbyMembers");
                 });
 
+            modelBuilder.Entity("api.Models.Meetings.Meeting", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("MeetingProposalId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TeamsMeetingLink")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MeetingProposalId")
+                        .IsUnique();
+
+                    b.ToTable("Meetings");
+                });
+
+            modelBuilder.Entity("api.Models.Meetings.MeetingProposal", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("LobbyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("MeetingTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LobbyId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("MeetingProposals");
+                });
+
+            modelBuilder.Entity("api.Models.Meetings.MeetingVote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("MeetingProposalId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Vote")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("VotedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MeetingProposalId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("MeetingVotes");
+                });
+
             modelBuilder.Entity("api.Models.ProgrammingLanguage", b =>
                 {
                     b.Property<int>("Id")
@@ -270,15 +354,15 @@ namespace api.Migrations
                             Category = 1,
                             Description = "",
                             IsCompleted = false,
-                            Name = "Attend your scheduled team meeting"
+                            Name = "Break down the tasks"
                         },
                         new
                         {
                             Id = 3,
-                            Category = 1,
+                            Category = 0,
                             Description = "",
                             IsCompleted = false,
-                            Name = "Break down the tasks"
+                            Name = "Attend your scheduled team meeting"
                         },
                         new
                         {
@@ -507,6 +591,55 @@ namespace api.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("api.Models.Meetings.Meeting", b =>
+                {
+                    b.HasOne("api.Models.Meetings.MeetingProposal", "MeetingProposal")
+                        .WithOne("Meeting")
+                        .HasForeignKey("api.Models.Meetings.Meeting", "MeetingProposalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MeetingProposal");
+                });
+
+            modelBuilder.Entity("api.Models.Meetings.MeetingProposal", b =>
+                {
+                    b.HasOne("api.Models.Lobby", "Lobby")
+                        .WithMany()
+                        .HasForeignKey("LobbyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("api.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lobby");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("api.Models.Meetings.MeetingVote", b =>
+                {
+                    b.HasOne("api.Models.Meetings.MeetingProposal", "MeetingProposal")
+                        .WithMany("Votes")
+                        .HasForeignKey("MeetingProposalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("api.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("MeetingProposal");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("api.Models.ProgrammingLanguage", b =>
                 {
                     b.HasOne("api.Models.Role", "Role")
@@ -647,6 +780,14 @@ namespace api.Migrations
 
                     b.Navigation("UserTaskProgress")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("api.Models.Meetings.MeetingProposal", b =>
+                {
+                    b.Navigation("Meeting")
+                        .IsRequired();
+
+                    b.Navigation("Votes");
                 });
 
             modelBuilder.Entity("api.Models.ProgrammingLanguage", b =>

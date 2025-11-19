@@ -68,7 +68,7 @@ namespace api.Services
             return tasks;
         }
 
-        private async Task UpdateCreatedIssuesAsync(int lobbyId, TeamTask createdIssuesTask)
+        public async Task UpdateCreatedIssuesAsync(int lobbyId, TeamTask createdIssuesTask)
         {
             var lobby = await _context.Lobbies
                 .FirstOrDefaultAsync(l => l.Id == lobbyId);
@@ -82,6 +82,24 @@ namespace api.Services
             if (issuesCount < 5) return;
 
             createdIssuesTask.IsCompleted = true;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateAttendInMeetingAsync(int userId)
+        {
+            var userTaskProgress = await _context.UserTaskProgresses
+                .Include(utp => utp.UserTasks)
+                .Where(utp => utp.LobbyMember.UserId == userId)
+                .FirstOrDefaultAsync()
+            ?? throw new InvalidOperationException("User task progress not found.");
+
+            var userTask = userTaskProgress.UserTasks
+                .FirstOrDefault(ut => ut.Name == "Attend your scheduled team meeting") // change it to enumerate??
+            ?? throw new InvalidOperationException("User task 'Attend the team meeting' not found.");
+
+            if (userTask.IsCompleted) return;
+            
+            userTask.IsCompleted = true;
             await _context.SaveChangesAsync();
         }
     }

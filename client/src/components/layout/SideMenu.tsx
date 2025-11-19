@@ -1,9 +1,12 @@
 import { logoutUser } from '../../apiClient/auth/auth';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import UserAvatar from '../shared/UserAvatar';
+import useCurrentUser from '../../hooks/useCurrentUser';
 
 function SideMenu() {
     const navigate = useNavigate();
+    const username = useCurrentUser();
 
     const handleClick = async () => {
         const result = await logoutUser();
@@ -153,13 +156,7 @@ function SideMenu() {
       </nav>
 
       <div className="flex flex-col space-y-6">
-        <a href="#">
-          <img 
-            className="object-cover w-8 h-8 rounded-full" 
-            src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=4&w=880&h=880&q=100" 
-            alt="User Avatar" 
-          />
-        </a>
+        <UserAvatar userName={username!} width={35} />
 
        <a onClick={handleClick} className="p-1.5 text-gray-700 focus:outline-none transition-colors duration-200 rounded-lg dark:text-gray-200 dark:hover:bg-gray-800 hover:bg-gray-100">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">

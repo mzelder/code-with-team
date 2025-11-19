@@ -8,6 +8,7 @@ using Microsoft.Identity.Client;
 using Microsoft.EntityFrameworkCore;
 using api.Dtos;
 using api.Dtos.Chat;
+using api.Services;
 
 namespace api.Controllers
 {
@@ -16,10 +17,12 @@ namespace api.Controllers
     public class ChatController : BaseAuthorizedController
     {
         private readonly AppDbContext _context;
+        private readonly IChatService _chatService;
 
-        public ChatController(AppDbContext context)
+        public ChatController(AppDbContext context, IChatService chatService)
         {
             _context = context;
+            _chatService = chatService;
         }
 
         [HttpGet("get-messages")]
@@ -28,22 +31,23 @@ namespace api.Controllers
         {
             try
             {
-                var lobbyId = await _context.LobbyMembers
-                    .Where(lm => lm.UserId == GetCurrentUserId())
-                    .Select(lm => lm.LobbyId)
-                    .FirstOrDefaultAsync();
+                var response = await _chatService.GetMessagesAsync(GetCurrentUserId());
+                return Ok(response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new ApiResponseDto(false, ex.Message));
+            }
+        }
 
-                var messages = await _context.ChatMessages
-                    .Where(m => m.LobbyId == lobbyId)
-                    .Select(m => new ChatMessageDto
-                    {
-                        Username = m.User.Username,
-                        Message = m.Message,
-                        Date = m.CreatedAt.ToString("g")
-                    })
-                    .ToListAsync();
-
-                return Ok(messages);
+        [HttpGet("get-meeting-proposals")]
+        [Authorize]
+        public async Task<ActionResult<ChatMessageDto>> GetMeetingProposals()
+        {
+            try
+            {
+                var response = await _chatService.GetMeetingProposalsAsync(GetCurrentUserId());
+                return Ok(response);
             }
             catch (InvalidOperationException ex)
             {

@@ -44,14 +44,14 @@ namespace api.Services
             var securityKey = new RsaSecurityKey(rsa);
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.RsaSha256);
 
-            var now = DateTime.UtcNow;
+            var now = DateTimeOffset.UtcNow;
             
             var header = new JwtHeader(credentials);
             var payload = new JwtPayload
             {
                 { "iss", appId },
-                { "iat", new DateTimeOffset(now.AddSeconds(-60)).ToUnixTimeSeconds() },
-                { "exp", new DateTimeOffset(now.AddMinutes(10)).ToUnixTimeSeconds() }
+                { "iat", now.ToUnixTimeSeconds() },
+                { "exp", now.AddMinutes(9).ToUnixTimeSeconds() }
             };
 
             var jwtToken = new JwtSecurityToken(header, payload);
