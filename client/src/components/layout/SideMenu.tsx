@@ -16,6 +16,7 @@ function SideMenu() {
             if (isSuccess) {
                 const successMessage = result.message;
                 toast.success(successMessage);
+                localStorage.clear();
                 navigate("/", { replace: true });
             }
         } catch(error: any) {
