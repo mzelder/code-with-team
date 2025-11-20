@@ -1,5 +1,6 @@
 ﻿using api.Models;
 using api.Models.Meetings;
+using api.Models.Mentor;
 using api.Models.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
@@ -29,6 +30,12 @@ namespace api.Data
         public DbSet<MeetingProposal> MeetingProposals { get; set; }
         public DbSet<MeetingVote> MeetingVotes { get; set; }
         public DbSet<Meeting> Meetings { get; set; }
+        
+        public DbSet<Mentor> Mentors { get; set; }
+        public DbSet<MentorForm> MentorForms { get; set; }
+        public DbSet<MentorQuestion> MentorQuestions { get; set; }
+        public DbSet<MentorAssesmentAnswer> MentorAssesmentAnswers { get; set; }
+        public DbSet<MentorPortfolioLink> MentorPortfolioLinks { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -127,6 +134,24 @@ namespace api.Data
             modelBuilder.Entity<LobbyMember>()
                 .Property(u => u.JoinedAt)
                 .HasDefaultValueSql("GETDATE()");
+
+            modelBuilder.Entity<MentorForm>()
+            .HasOne(mf => mf.User)
+            .WithMany(u => u.MentorForms)
+            .HasForeignKey(mf => mf.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Mentor>()
+            .HasOne(m => m.User)
+            .WithOne(u => u.Mentor)
+            .HasForeignKey<Mentor>(m => m.UserId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Mentor>()
+            .HasOne(m => m.MentorForm)
+            .WithMany() 
+            .HasForeignKey(m => m.MentorFormId)
+            .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<Category>().HasData(
                 new Category { Id = 1, Name = "Web Dev" }
