@@ -1,9 +1,12 @@
-import { Route, Routes, Link } from 'react-router-dom'
+import { Route, Routes, Link, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { LoginPage, MainPage, RegisterPage} from './pages'
 import ProtectedRoutes from './utils/ProtectedRoutes'
 import './App.css'
 import CallbackPage from './pages/CallbackPage'
+import SelectRolePage from './pages/SelectRolePage'
+import RoleGuard from './utils/RoleGuard'
+import MentorFormPage from './pages/MentorFormPage'
 
 function App() {
   return (
@@ -11,25 +14,25 @@ function App() {
         <Toaster position="top-center" />
         <Routes>
             <Route
-            path="/"
-            element={
-            <div className="flex flex-col items-center justify-center min-h-screen gap-4 bg-gray-900 text-white">
-                <div className="flex gap-4 mt-6">
-                <Link
-                    to="/signin"
-                    className="px-4 py-2 rounded-md bg-indigo-500 hover:bg-indigo-400 font-semibold"
-                >
-                    Sign in
-                </Link>
-                <Link
-                    to="/signup"
-                    className="px-4 py-2 rounded-md bg-green-500 hover:bg-green-400 font-semibold"
-                >
-                    Sign up
-                </Link>
+                path="/"
+                element={
+                <div className="flex flex-col items-center justify-center min-h-screen gap-4 bg-gray-900 text-white">
+                    <div className="flex gap-4 mt-6">
+                    <Link
+                        to="/signin"
+                        className="px-4 py-2 rounded-md bg-indigo-500 hover:bg-indigo-400 font-semibold"
+                    >
+                        Sign in
+                    </Link>
+                    <Link
+                        to="/signup"
+                        className="px-4 py-2 rounded-md bg-green-500 hover:bg-green-400 font-semibold"
+                    >
+                        Sign up
+                    </Link>
+                    </div>
                 </div>
-            </div>
-            }
+                }
         />
             
             <Route path="/signin" element={<LoginPage />} />
@@ -37,8 +40,15 @@ function App() {
             <Route path="/callback/auth" element={<CallbackPage />} />
 
             <Route element={<ProtectedRoutes />}>
-                <Route path="/app" element={<MainPage />} />
+                <Route path="/choose-role" element={<SelectRolePage />} />
+                <Route path="/mentor-form" element={<MentorFormPage />} />
+
+                <Route element={<RoleGuard />}>
+                    <Route path="/app" element={<MainPage />} />
+                </Route>
             </Route>
+
+            <Route path="*" element={<Navigate to="/app" replace />} />
         </Routes>
     </div>
   )

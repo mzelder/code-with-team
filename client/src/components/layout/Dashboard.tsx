@@ -1,28 +1,17 @@
-import { useState } from "react";
-import SideMenu from "./SideMenu";
+import { Role } from "../../utils/RoleGuard";
 import MatchmakingContainer from "../matchmaking/MatchmakingContainer";
 import MentorContainer from "../mentor/MentorContainer";
-import RoleSelector from "../role/RoleSelector";
+import SideMenu from "./SideMenu";
 
 function Dashboard() {
-    const [userRole, setUserRole] = useState<string | null>(
-        localStorage.getItem("userRole")
-    );
-    
-    const handleRoleSelected = () => {
-        setUserRole(localStorage.getItem("userRole"));
-    };
-    
-    if (!userRole) {
-        return <RoleSelector onRoleSelected={handleRoleSelected} />;
-    }
+    const role = localStorage.getItem("userRole"); 
     
     return (
         <div className="flex h-full">
             <SideMenu></SideMenu>
 
             <div className="flex-1 h-full">
-                {userRole === "player" ? <MatchmakingContainer /> : <MentorContainer />}
+                {role === Role.Player ? <MatchmakingContainer /> : <MentorContainer />}
             </div>
         </div>
     );

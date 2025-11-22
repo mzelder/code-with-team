@@ -153,6 +153,18 @@ namespace api.Data
             .HasForeignKey(m => m.MentorFormId)
             .OnDelete(DeleteBehavior.SetNull);
 
+            modelBuilder.Entity<MentorAssesmentAnswer>()
+                .HasOne(a => a.MentorForm)
+                .WithMany(f => f.MentorAssesmentAnswers)
+                .HasForeignKey(a => a.MentorFormId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<MentorAssesmentAnswer>()
+                .HasOne(a => a.MentorQuestion)
+                .WithMany(q => q.MentorAssesmentAnswers)
+                .HasForeignKey(a => a.MentorQuestionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<Category>().HasData(
                 new Category { Id = 1, Name = "Web Dev" }
             );
@@ -216,6 +228,43 @@ namespace api.Data
                     Name = "Start coding",
                     Description = "",
                     Category = TaskCategory.User
+                }
+            );
+
+            modelBuilder.Entity<MentorQuestion>().HasData(
+                new MentorQuestion
+                {
+                    Id = 1, 
+                    QuestionText = "Describe a time you helped someone overcome a significant challenge in a project. " +
+                    "What was your approach, and what did you learn from the experience?"
+                },
+                
+                new MentorQuestion
+                {
+                    Id = 2,
+                    QuestionText = "How do you balance giving guidance with allowing mentees to make their own decisions (and possible mistakes)? " +
+                    "Please give a concrete example."
+                },
+
+                new MentorQuestion
+                {
+                    Id = 3,
+                    QuestionText = "What types of mentees or situations do you find most challenging, " +
+                    "and how do you adapt your mentoring style in those cases?"
+                },
+
+                new MentorQuestion
+                {
+                    Id = 4,
+                    QuestionText = "How do you structure feedback (both positive and critical) during a project lifecycle? " +
+                    "Include any frameworks or routines you use."
+                },
+
+                new MentorQuestion
+                {
+                    Id = 5,
+                    QuestionText = "What motivates you to mentor, " +
+                    "and what do you hope to gain or improve in yourself through mentoring this team?"
                 }
             );
         }

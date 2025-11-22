@@ -4,6 +4,6 @@
     {
         public int Id { get; set; }
         public string QuestionText { get; set; }
-        public MentorAssesmentAnswer MentorAssesmentAnswer { get; set; }
+        public ICollection<MentorAssesmentAnswer> MentorAssesmentAnswers { get; set; }
     }
 }

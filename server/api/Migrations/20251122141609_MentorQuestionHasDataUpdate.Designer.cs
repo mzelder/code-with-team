@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using api.Data;
 
@@ -11,9 +12,11 @@ using api.Data;
 namespace api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251122141609_MentorQuestionHasDataUpdate")]
+    partial class MentorQuestionHasDataUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -266,7 +269,8 @@ namespace api.Migrations
 
                     b.HasIndex("MentorFormId");
 
-                    b.HasIndex("MentorQuestionId");
+                    b.HasIndex("MentorQuestionId")
+                        .IsUnique();
 
                     b.ToTable("MentorAssesmentAnswers");
                 });
@@ -823,9 +827,9 @@ namespace api.Migrations
                         .IsRequired();
 
                     b.HasOne("api.Models.Mentor.MentorQuestion", "MentorQuestion")
-                        .WithMany("MentorAssesmentAnswers")
-                        .HasForeignKey("MentorQuestionId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .WithOne("MentorAssesmentAnswer")
+                        .HasForeignKey("api.Models.Mentor.MentorAssesmentAnswer", "MentorQuestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("MentorForm");
@@ -1014,7 +1018,8 @@ namespace api.Migrations
 
             modelBuilder.Entity("api.Models.Mentor.MentorQuestion", b =>
                 {
-                    b.Navigation("MentorAssesmentAnswers");
+                    b.Navigation("MentorAssesmentAnswer")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("api.Models.ProgrammingLanguage", b =>
