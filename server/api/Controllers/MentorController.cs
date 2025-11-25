@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using api.Dtos.Mentor;
 using api.Models.Mentor;
 using api.Dtos;
+using api.Dtos.Matchmaking;
 
 namespace api.Controllers
 {
@@ -18,13 +19,19 @@ namespace api.Controllers
     {
         private readonly AppDbContext _context;
         private readonly IMentorService _mentorService;
+        private readonly IMatchmakingService _matchmakingService;
 
-        public MentorController(AppDbContext context, IMentorService mentorService)
+        public MentorController(
+            AppDbContext context, 
+            IMentorService mentorService,
+            IMatchmakingService matchmakingService)
         {
             _context = context;
             _mentorService = mentorService;
+            _matchmakingService = matchmakingService;
         }
 
+        [Authorize]
         [HttpGet("get-mentor")]
         public async Task<ActionResult<MentorDto>> GetMentorStatus()
         {
@@ -39,6 +46,7 @@ namespace api.Controllers
 
         }
 
+        [Authorize]
         [HttpGet("get-questions")]
         public async Task<ActionResult<MentorQuestionDto>> GetMentorQuestions()
         {
@@ -52,6 +60,7 @@ namespace api.Controllers
             }
         }
 
+        [Authorize]
         [HttpPost("submit-form")]
         public async Task<ActionResult> SubmitMentorForm([FromBody] MentorFormDto mentorFormDto)
         {
@@ -67,6 +76,7 @@ namespace api.Controllers
             }
         }
 
+        [Authorize]
         [HttpPost("accept-application/{mentorFormId}")] //change on prod
         public async Task<ActionResult> AcceptMentorApplication(int mentorFormId)
         {
@@ -74,6 +84,20 @@ namespace api.Controllers
             {
                 await _mentorService.AcceptMentorApplicationAsync(mentorFormId);
                 return Ok(new ApiResponseDto(true, "Mentor application accepted successfully."));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponseDto(false, ex.Message));
+            }
+        }
+
+        [Authorize]
+        [HttpGet("get-mentor-teams")] 
+        public async Task<ActionResult<LobbyStatusDto[]>> GetMentorTeams()
+        {
+            try
+            {
+                return await _mentorService.GetMentorTeams(GetCurrentUserId());
             }
             catch (Exception ex)
             {

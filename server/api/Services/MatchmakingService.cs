@@ -157,7 +157,8 @@ namespace api.Services
                     Category = m.UserSelection.Category.Name,
                     Role = m.UserSelection.Role.Name
                 }).ToList(),
-                RepositoryUrl = lobby?.RepositoryUrl
+                RepositoryUrl = lobby?.RepositoryUrl,
+                Status = lobby.Status
             };
         }
 
@@ -200,7 +201,7 @@ namespace api.Services
                     // create lobby
                     var lobby = new Lobby
                     {
-                        Status = "Active",
+                        Status = LobbyStatus.SchedulingMeeting,
                         CreatedAt = DateTime.Now,
                     };
                     _context.Lobbies.Add(lobby);

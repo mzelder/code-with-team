@@ -1,5 +1,7 @@
 ﻿using api.Data;
+using api.Dtos.Matchmaking;
 using api.Dtos.Mentor;
+using api.Models;
 using api.Models.Mentor;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -11,10 +13,12 @@ namespace api.Services
     public class MentorService : IMentorService
     {
         private readonly AppDbContext _context;
+        private readonly IMatchmakingService _matchmakingService;
 
-        public MentorService(AppDbContext context)
+        public MentorService(AppDbContext context, IMatchmakingService matchmakingService)
         {
             _context = context;
+            _matchmakingService = matchmakingService;
         }
 
         public async Task<MentorDto> GetMentorStatusAsync(int userId)
@@ -109,6 +113,30 @@ namespace api.Services
             };
             _context.Mentors.Add(mentor);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<LobbyStatusDto[]> GetMentorTeams(int userId)
+        {
+            var mentor = await _context.Mentors
+                .Where(m => m.UserId == userId)
+                .FirstOrDefaultAsync()
+            ?? throw new Exception("Mentor not found for the current user.");
+
+            var lobbyRepresentiveIds = _context.LobbyMembers
+                .Include(lm => lm.Lobby)
+                .Where(lm => lm.Lobby.MentorId == mentor.Id)
+                .GroupBy(lm => lm.Lobby)
+                .Select(g => g.OrderBy(m => m.Id).Select(m => m.UserId).First())
+                .ToListAsync();
+
+            var mentorTeams = new List<LobbyStatusDto>();
+            foreach (var id in lobbyRepresentiveIds.Result)
+            {
+                var lobbyStatus = await _matchmakingService.GetLobbyStatusAsync(id);
+                mentorTeams.Add(lobbyStatus);
+            }
+
+            return mentorTeams.ToArray();
         }
     }
 }

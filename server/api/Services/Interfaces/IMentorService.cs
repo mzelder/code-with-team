@@ -1,4 +1,5 @@
-﻿using api.Dtos.Mentor;
+﻿using api.Dtos.Matchmaking;
+using api.Dtos.Mentor;
 
 namespace api.Services.Interfaces
 {
@@ -8,5 +9,6 @@ namespace api.Services.Interfaces
         Task<MentorQuestionDto> GetMentorQuestionsAsync();
         Task SubmitMentorFormAsync(int userId, MentorFormDto mentorFormDto);
         Task AcceptMentorApplicationAsync(int mentorFormId);
+        Task<LobbyStatusDto[]> GetMentorTeams(int userId);
     }
 }

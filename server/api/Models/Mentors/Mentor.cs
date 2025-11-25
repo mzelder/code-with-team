@@ -8,5 +8,7 @@
         public int? MentorFormId { get; set; }
         public MentorForm? MentorForm { get; set; }
         public DateTime CreatedAt { get; set; }
+
+        public ICollection<Lobby>? Lobbys { get; set; }
     }
 }
