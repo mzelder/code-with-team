@@ -1,5 +1,135 @@
+import { useEffect, useState } from "react";
+import Button from "../shared/Button";
+import UserAvatar from "../shared/UserAvatar";
+import type { LobbyStatusDto } from "../../apiClient/matchmaking/dtos";
+import { getMentorTeams } from "../../apiClient/mentor/mentor";
+import toast from "react-hot-toast/headless";
+
+// Enum representing lobby lifecycle states
+export enum LobbyStatus {
+    SchedulingMeeting,
+    Working,
+    Finished
+}
+
+// Styles associated with each enum value (includes human-readable label)
+const statusStyles: Record<LobbyStatus, { text: string; dot: string; label: string }> = {
+    [LobbyStatus.SchedulingMeeting]: { text: "text-[#00D1FF]", dot: "bg-[#00D1FF]", label: "Scheduling first meeting" },
+    [LobbyStatus.Working]: { text: "text-yellow-400", dot: "bg-yellow-400", label: "Working" },
+    [LobbyStatus.Finished]: { text: "text-green-400", dot: "bg-green-400", label: "Finished" }
+};
+
+function getStatusStyle(status: LobbyStatus): { text: string; dot: string; label: string } {
+    return statusStyles[status];
+}
+
+function parseLobbyStatus(raw?: string | LobbyStatus): LobbyStatus {
+    if (typeof raw === "number") {
+        return raw; // Already an enum value
+    }
+    switch (raw) {
+        case "Scheduling first meeting":
+            return LobbyStatus.SchedulingMeeting;
+        case "Working":
+            return LobbyStatus.Working;
+        case "Finished":
+            return LobbyStatus.Finished;
+        default:
+            return LobbyStatus.SchedulingMeeting; // Fallback / unknown
+    }
+}
+
+
 function MentorContainer() {
-    return <div></div>;
+    const [mentorTeams, setMentorTeams] = useState<LobbyStatusDto[]>([]);
+
+    useEffect(() => {
+        const fetchMentorTeams = async () => {
+            try {
+                const result = await getMentorTeams();
+                setMentorTeams(result);
+            } catch (error) {
+                toast.error("Can't get mentor teams");
+            }
+        };
+        fetchMentorTeams();
+    }, []);
+
+    return (
+        <div className="p-6 text-white">
+            <div className="overflow-x-auto border border-gray-700 rounded">
+                <table className="min-w-full text-sm">
+                    <thead className="bg-gray-800">
+                        <tr>
+                            <th className="p-3 text-left">Team</th>
+                            <th className="p-3 text-left">Status</th>
+                            <th className="p-3 text-left">Repo</th>
+                            <th className="p-3 text-left">Lobby</th>
+                            <th className="p-3 text-left">Review</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {mentorTeams.map(team => {
+                            const lobbyStatus = parseLobbyStatus(team.status);
+                            const styles = getStatusStyle(lobbyStatus);
+                            const reviewDisabled = lobbyStatus !== LobbyStatus.Finished;
+                            return (
+                                <tr key={team.lobbyId} className="odd:bg-gray-900 even:bg-gray-850">
+                                    <td className="p-3">
+                                        <div className="flex -space-x-2">
+                                            {team.members.slice(0, 4).map(m => (
+                                                <div key={m.name} title={m.name}>
+                                                    <UserAvatar userName={m.name} width={40} className="w-10 h-10" />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </td>
+                                    <td className={`p-3 font-medium ${styles.text}`}>
+                                        <span className={`inline-block w-2 h-2 rounded-full mr-2 ${styles.dot}`} />
+                                        {styles.label}
+                                    </td>
+                                    <td className="p-3">
+                                        {team.repositoryUrl ? (
+                                            <Button
+                                                text="Open Repo"
+                                                onToggle={() => window.open(team.repositoryUrl, "_blank", "noopener")}
+                                                defaultBorderColor="white"
+                                                defaultTextColor="white"
+                                            />
+                                        ) : (
+                                            <span className="text-gray-500">No repo</span>
+                                        )}
+                                    </td>
+                                    <td className="p-3">
+                                        <Button
+                                            text="Open Lobby"
+                                            onToggle={() => (window.location.href = `/lobby/${team.lobbyId}`)}
+                                            defaultBorderColor="white"
+                                            defaultTextColor="white"
+                                        />
+                                    </td>
+                                    <td className="p-3">
+                                        <Button
+                                            text="Review"
+                                            isDisabled={reviewDisabled}
+                                            isSelected={!reviewDisabled}
+                                            onToggle={() => {
+                                                if (reviewDisabled) return;
+                                                console.log("Start review for lobby", team.lobbyId);
+                                            }}
+                                        />
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
+            {mentorTeams.length === 0 && (
+                <div className="mt-4 text-sm text-gray-400">No teams assigned yet.</div>
+            )}
+        </div>
+    );
 }
 
 export default MentorContainer;
