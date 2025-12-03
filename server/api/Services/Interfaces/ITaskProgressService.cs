@@ -10,5 +10,7 @@ namespace api.Services.Interfaces
         
         Task UpdateCreatedIssuesAsync(int lobbyId, TeamTask createdIssuesTask);
         Task UpdateAttendInMeetingAsync(int userId);
+
+        Task UpdateFinishAsync(int userId);
     }
 }

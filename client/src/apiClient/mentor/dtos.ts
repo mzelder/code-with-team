@@ -14,3 +14,8 @@ export interface MentorFormDto {
 export interface MentorQuestionDto {
     questions: string[];
 }
+
+export interface MentorReviewDto {
+    lobbyId: number;
+    feedback: string;
+}

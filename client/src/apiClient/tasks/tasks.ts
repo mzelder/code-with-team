@@ -9,3 +9,7 @@ export async function getTaskProgress(): Promise<TaskProgressDto[]> {
 export async function updateAttendInMeetingTask(): Promise<ApiResponseDto> {
     return apiPost("/api/TaskProgress/attend-meeting");
 }
+
+export async function finishWork(): Promise<ApiResponseDto> {
+    return apiPost("/api/TaskProgress/finish-work");
+}

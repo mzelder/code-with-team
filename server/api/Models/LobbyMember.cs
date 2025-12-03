@@ -25,6 +25,7 @@ namespace api.Models
 
         public QueueStatus Status { get; set; }
         public DateTime? JoinedAt { get; set; }
+        public bool Finished { get; set; }
 
         public UserTaskProgress UserTaskProgress { get; set; }
     }

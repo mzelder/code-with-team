@@ -1,6 +1,7 @@
 ﻿using api.Models;
 using api.Models.Meetings;
 using api.Models.Mentor;
+using api.Models.Mentors;
 using api.Models.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
@@ -36,6 +37,8 @@ namespace api.Data
         public DbSet<MentorQuestion> MentorQuestions { get; set; }
         public DbSet<MentorAssesmentAnswer> MentorAssesmentAnswers { get; set; }
         public DbSet<MentorPortfolioLink> MentorPortfolioLinks { get; set; }
+        public DbSet<MentorReview> MentorReviews { get; set; }
+        public DbSet<AiSummary> AiSummaries { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -221,14 +224,7 @@ namespace api.Data
                     Name = "Visit github repository",
                     Description = "",
                     Category = TaskCategory.User
-                },
-                new TaskDefinitions
-                {
-                    Id = 5,
-                    Name = "Start coding",
-                    Description = "",
-                    Category = TaskCategory.User
-                }
+                 }
             );
 
             modelBuilder.Entity<MentorQuestion>().HasData(

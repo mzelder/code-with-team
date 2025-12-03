@@ -147,6 +147,11 @@ namespace api.Services
                 .Where(lm => lm.LobbyId == lobbyId.Value)
                 .ToListAsync(ct);
 
+            var aiSummary = await _context.Lobbies
+                .Where(l => l.Id == lobbyId)
+                .Select(l => l.AiSummary)
+                .FirstOrDefaultAsync(ct);
+
             return new LobbyStatusDto
             {
                 Found = true,
@@ -155,10 +160,12 @@ namespace api.Services
                 {
                     Name = m.User.Username,
                     Category = m.UserSelection.Category.Name,
-                    Role = m.UserSelection.Role.Name
+                    Role = m.UserSelection.Role.Name,
+                    Finished = m.Finished
                 }).ToList(),
                 RepositoryUrl = lobby?.RepositoryUrl,
-                Status = lobby.Status
+                Status = lobby.Status,
+                AiSummary = aiSummary?.SummaryText
             };
         }
 

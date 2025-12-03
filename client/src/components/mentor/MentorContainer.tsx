@@ -2,17 +2,16 @@ import { useEffect, useState } from "react";
 import Button from "../shared/Button";
 import UserAvatar from "../shared/UserAvatar";
 import type { LobbyStatusDto } from "../../apiClient/matchmaking/dtos";
-import { getMentorTeams } from "../../apiClient/mentor/mentor";
+import { getMentorTeams, submitMentorReview } from "../../apiClient/mentor/mentor";
 import toast from "react-hot-toast/headless";
+import ReviewPanel from "./ReviewPanel";
 
-// Enum representing lobby lifecycle states
 export enum LobbyStatus {
     SchedulingMeeting,
     Working,
     Finished
 }
 
-// Styles associated with each enum value (includes human-readable label)
 const statusStyles: Record<LobbyStatus, { text: string; dot: string; label: string }> = {
     [LobbyStatus.SchedulingMeeting]: { text: "text-[#00D1FF]", dot: "bg-[#00D1FF]", label: "Scheduling first meeting" },
     [LobbyStatus.Working]: { text: "text-yellow-400", dot: "bg-yellow-400", label: "Working" },
@@ -25,7 +24,7 @@ function getStatusStyle(status: LobbyStatus): { text: string; dot: string; label
 
 function parseLobbyStatus(raw?: string | LobbyStatus): LobbyStatus {
     if (typeof raw === "number") {
-        return raw; // Already an enum value
+        return raw;
     }
     switch (raw) {
         case "Scheduling first meeting":
@@ -39,9 +38,10 @@ function parseLobbyStatus(raw?: string | LobbyStatus): LobbyStatus {
     }
 }
 
-
 function MentorContainer() {
     const [mentorTeams, setMentorTeams] = useState<LobbyStatusDto[]>([]);
+    const [showReviewPanel, setShowReviewPanel] = useState<boolean>(false);
+    const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
 
     useEffect(() => {
         const fetchMentorTeams = async () => {
@@ -55,7 +55,30 @@ function MentorContainer() {
         fetchMentorTeams();
     }, []);
 
+    const sendFeedback = async(feedback: string) => {
+        if (selectedTeamId == null) {
+            toast.error("No team selected for review");
+            return;
+        }
+
+        const text = feedback.trim();
+        if (!text) {
+            toast.error("Feedback cannot be empty");
+            return;
+        }
+
+        try {
+            await submitMentorReview({ lobbyId: selectedTeamId, feedback: text });
+            toast.success("Feedback sent");
+            setShowReviewPanel(false);
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to send feedback");
+        }
+    }
+
     return (
+        <>
         <div className="p-6 text-white">
             <div className="overflow-x-auto border border-gray-700 rounded">
                 <table className="min-w-full text-sm">
@@ -114,8 +137,8 @@ function MentorContainer() {
                                             isDisabled={reviewDisabled}
                                             isSelected={!reviewDisabled}
                                             onToggle={() => {
-                                                if (reviewDisabled) return;
-                                                console.log("Start review for lobby", team.lobbyId);
+                                                setSelectedTeamId(team.lobbyId);
+                                                setShowReviewPanel(true);
                                             }}
                                         />
                                     </td>
@@ -129,6 +152,16 @@ function MentorContainer() {
                 <div className="mt-4 text-sm text-gray-400">No teams assigned yet.</div>
             )}
         </div>
+
+        {showReviewPanel && (
+            <ReviewPanel
+                onClose={() => setShowReviewPanel(false)}
+                onSendFeedback={(feedback) => sendFeedback(feedback)}
+                aiReviewMarkdown={mentorTeams.find(t => t.lobbyId === selectedTeamId)?.aiSummary}
+                title={selectedTeamId ? `Review for Lobby ${selectedTeamId}` : "Review Panel"}
+            />
+        )}
+        </>
     );
 }
 

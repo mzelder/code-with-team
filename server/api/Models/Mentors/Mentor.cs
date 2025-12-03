@@ -1,4 +1,6 @@
-﻿namespace api.Models.Mentor
+﻿using api.Models.Mentors;
+
+namespace api.Models.Mentor
 {
     public class Mentor
     {
@@ -10,5 +12,6 @@
         public DateTime CreatedAt { get; set; }
 
         public ICollection<Lobby>? Lobbys { get; set; }
+        public ICollection<MentorReview>? MentorReviews { get; set; }
     }
 }

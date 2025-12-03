@@ -66,9 +66,12 @@ builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IMeetingTimeHelper, MeetingTimeHelper>();
 builder.Services.AddScoped<ITeamsMeetingService, TeamsMeetingService>();
 builder.Services.AddScoped<IMentorService, MentorService>();
+builder.Services.AddHttpClient<IGreptileReviewService, GreptileReviewService>();
+builder.Services.AddScoped<ICodeReviewService, CodeReviewService>();
 
 builder.Services.AddHostedService<api.Services.Hosted.MatchmakingBackgroundService>();
 builder.Services.AddHostedService<api.Services.Hosted.MeetingSchedulerBackgroundService>();
+builder.Services.AddHostedService<api.Services.Hosted.CodeReviewBackgroundService>();
 
 var app = builder.Build();
 

@@ -104,5 +104,34 @@ namespace api.Controllers
                 return BadRequest(new ApiResponseDto(false, ex.Message));
             }
         }
+
+        [Authorize]
+        [HttpPost("submit-review")]
+        public async Task<ActionResult> SubmitMentorReview([FromBody] MentorReviewDto mentorReviewDto)
+        {
+            try
+            {
+                await _mentorService.SubmitMentorFeedback(GetCurrentUserId(), mentorReviewDto);
+                return Ok(new ApiResponseDto(true, "Mentor review submitted successfully."));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponseDto(false, ex.Message));
+            }
+        }
+
+        [Authorize]
+        [HttpGet("get-mentor-review")]
+        public async Task<ActionResult<MentorReviewDto>> GetMentorReview()
+        {
+            try
+            {
+                return await _mentorService.GetMentorFeedback(GetCurrentUserId());  
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponseDto(false, ex.Message));
+            }
+        }
     }
 }

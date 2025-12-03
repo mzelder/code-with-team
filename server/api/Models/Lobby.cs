@@ -1,5 +1,6 @@
 ﻿using api.Models.Tasks;
 using api.Models;
+using api.Models.Mentors;
 
 namespace api.Models
 {
@@ -19,5 +20,7 @@ namespace api.Models
         public int? MentorId { get; set; }
         public Mentor.Mentor? Mentor { get; set; }
         public TeamTaskProgress TeamTaskProgress { get; set; }
+        public MentorReview Review { get; set; }
+        public AiSummary AiSummary { get; set; }
     }
 }

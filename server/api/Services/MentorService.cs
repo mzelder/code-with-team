@@ -3,6 +3,7 @@ using api.Dtos.Matchmaking;
 using api.Dtos.Mentor;
 using api.Models;
 using api.Models.Mentor;
+using api.Models.Mentors;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -137,6 +138,51 @@ namespace api.Services
             }
 
             return mentorTeams.ToArray();
+        }
+
+        public async Task SubmitMentorFeedback(int userId, MentorReviewDto mentorReviewDto)
+        {
+            var mentor = await _context.Mentors
+               .Where(m => m.UserId == userId)
+               .FirstOrDefaultAsync()
+           ?? throw new Exception("Mentor not found for the current user.");
+
+            var lobby = await _context.Lobbies
+                .Where(l => l.Id == mentorReviewDto.LobbyId)
+                .Where(l => l.MentorId == mentor.Id)
+                .FirstOrDefaultAsync()
+            ?? throw new Exception("Lobby not found for the current mentor.");
+
+            var mentorReview = new MentorReview
+            {
+                LobbyId = mentorReviewDto.LobbyId,
+                MentorId = mentor.Id,
+                Feedback = mentorReviewDto.Feedback,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.MentorReviews.Add(mentorReview);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<MentorReviewDto> GetMentorFeedback(int userId)
+        {
+            var lobby = await _context.LobbyMembers
+                .Include(lm => lm.Lobby)
+                .Where(lm => lm.UserId == userId)
+                .Select(lm => lm.Lobby)
+                .FirstOrDefaultAsync()
+            ?? throw new Exception("Lobby not found for the current user.");
+
+            var mentorReview = await _context.MentorReviews
+                .Where(mr => mr.LobbyId == lobby.Id)
+                .FirstOrDefaultAsync()
+            ?? throw new Exception("Mentor review not found for the current lobby.");
+
+            return new MentorReviewDto
+            {
+                LobbyId = lobby.Id,
+                Feedback = mentorReview.Feedback
+            };
         }
     }
 }

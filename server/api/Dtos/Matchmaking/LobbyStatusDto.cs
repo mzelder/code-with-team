@@ -9,5 +9,6 @@ namespace api.Dtos.Matchmaking
         public List<LobbyMemberDto>? Members { get; set; }
         public string? RepositoryUrl { get; set; }
         public LobbyStatus? Status { get; set; }
+        public string? AiSummary { get; set; }
     }
 }

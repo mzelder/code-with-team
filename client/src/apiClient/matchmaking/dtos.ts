@@ -38,6 +38,7 @@ export interface LobbyMemberDto {
     name: string;
     category: string;
     role: string;
+    finished: boolean;
 }
 
 export interface LobbyStatusDto {
@@ -46,4 +47,5 @@ export interface LobbyStatusDto {
     members: LobbyMemberDto[];
     repositoryUrl: string;
     status?: LobbyStatus;
+    aiSummary?: string
 }
