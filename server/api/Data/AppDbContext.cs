@@ -1,5 +1,7 @@
 ﻿using api.Models;
 using api.Models.Meetings;
+using api.Models.Mentor;
+using api.Models.Mentors;
 using api.Models.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
@@ -29,6 +31,14 @@ namespace api.Data
         public DbSet<MeetingProposal> MeetingProposals { get; set; }
         public DbSet<MeetingVote> MeetingVotes { get; set; }
         public DbSet<Meeting> Meetings { get; set; }
+        
+        public DbSet<Mentor> Mentors { get; set; }
+        public DbSet<MentorForm> MentorForms { get; set; }
+        public DbSet<MentorQuestion> MentorQuestions { get; set; }
+        public DbSet<MentorAssesmentAnswer> MentorAssesmentAnswers { get; set; }
+        public DbSet<MentorPortfolioLink> MentorPortfolioLinks { get; set; }
+        public DbSet<MentorReview> MentorReviews { get; set; }
+        public DbSet<AiSummary> AiSummaries { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -128,6 +138,36 @@ namespace api.Data
                 .Property(u => u.JoinedAt)
                 .HasDefaultValueSql("GETDATE()");
 
+            modelBuilder.Entity<MentorForm>()
+            .HasOne(mf => mf.User)
+            .WithMany(u => u.MentorForms)
+            .HasForeignKey(mf => mf.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Mentor>()
+            .HasOne(m => m.User)
+            .WithOne(u => u.Mentor)
+            .HasForeignKey<Mentor>(m => m.UserId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Mentor>()
+            .HasOne(m => m.MentorForm)
+            .WithMany() 
+            .HasForeignKey(m => m.MentorFormId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<MentorAssesmentAnswer>()
+                .HasOne(a => a.MentorForm)
+                .WithMany(f => f.MentorAssesmentAnswers)
+                .HasForeignKey(a => a.MentorFormId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<MentorAssesmentAnswer>()
+                .HasOne(a => a.MentorQuestion)
+                .WithMany(q => q.MentorAssesmentAnswers)
+                .HasForeignKey(a => a.MentorQuestionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<Category>().HasData(
                 new Category { Id = 1, Name = "Web Dev" }
             );
@@ -184,13 +224,43 @@ namespace api.Data
                     Name = "Visit github repository",
                     Description = "",
                     Category = TaskCategory.User
+                 }
+            );
+
+            modelBuilder.Entity<MentorQuestion>().HasData(
+                new MentorQuestion
+                {
+                    Id = 1, 
+                    QuestionText = "Describe a time you helped someone overcome a significant challenge in a project. " +
+                    "What was your approach, and what did you learn from the experience?"
                 },
-                new TaskDefinitions
+                
+                new MentorQuestion
+                {
+                    Id = 2,
+                    QuestionText = "How do you balance giving guidance with allowing mentees to make their own decisions (and possible mistakes)? " +
+                    "Please give a concrete example."
+                },
+
+                new MentorQuestion
+                {
+                    Id = 3,
+                    QuestionText = "What types of mentees or situations do you find most challenging, " +
+                    "and how do you adapt your mentoring style in those cases?"
+                },
+
+                new MentorQuestion
+                {
+                    Id = 4,
+                    QuestionText = "How do you structure feedback (both positive and critical) during a project lifecycle? " +
+                    "Include any frameworks or routines you use."
+                },
+
+                new MentorQuestion
                 {
                     Id = 5,
-                    Name = "Start coding",
-                    Description = "",
-                    Category = TaskCategory.User
+                    QuestionText = "What motivates you to mentor, " +
+                    "and what do you hope to gain or improve in yourself through mentoring this team?"
                 }
             );
         }

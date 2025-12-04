@@ -102,5 +102,17 @@ namespace api.Services
             userTask.IsCompleted = true;
             await _context.SaveChangesAsync();
         }
+
+        public async Task UpdateFinishAsync(int userId)
+        {
+            var lobbyMember = await _context.LobbyMembers
+                .FirstOrDefaultAsync(lm => lm.UserId == userId)
+            ?? throw new InvalidOperationException("Lobby member not found.");
+
+            if (lobbyMember.Finished) return;
+
+            lobbyMember.Finished = true;
+            await _context.SaveChangesAsync();
+        }
     }
 }

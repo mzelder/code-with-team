@@ -87,14 +87,18 @@ namespace api.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("MentorId")
+                        .HasColumnType("int");
+
                     b.Property<string>("RepositoryUrl")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("MentorId");
 
                     b.ToTable("Lobbies");
                 });
@@ -106,6 +110,9 @@ namespace api.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Finished")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("JoinedAt")
                         .ValueGeneratedOnAdd()
@@ -215,6 +222,218 @@ namespace api.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("MeetingVotes");
+                });
+
+            modelBuilder.Entity("api.Models.Mentor.Mentor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("MentorFormId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MentorFormId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Mentors");
+                });
+
+            modelBuilder.Entity("api.Models.Mentor.MentorAssesmentAnswer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AnswerText")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MentorFormId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MentorQuestionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MentorFormId");
+
+                    b.HasIndex("MentorQuestionId");
+
+                    b.ToTable("MentorAssesmentAnswers");
+                });
+
+            modelBuilder.Entity("api.Models.Mentor.MentorForm", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Motivation")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("MentorForms");
+                });
+
+            modelBuilder.Entity("api.Models.Mentor.MentorPortfolioLink", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("MentorFormId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MentorFormId");
+
+                    b.ToTable("MentorPortfolioLinks");
+                });
+
+            modelBuilder.Entity("api.Models.Mentor.MentorQuestion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("QuestionText")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MentorQuestions");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            QuestionText = "Describe a time you helped someone overcome a significant challenge in a project. What was your approach, and what did you learn from the experience?"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            QuestionText = "How do you balance giving guidance with allowing mentees to make their own decisions (and possible mistakes)? Please give a concrete example."
+                        },
+                        new
+                        {
+                            Id = 3,
+                            QuestionText = "What types of mentees or situations do you find most challenging, and how do you adapt your mentoring style in those cases?"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            QuestionText = "How do you structure feedback (both positive and critical) during a project lifecycle? Include any frameworks or routines you use."
+                        },
+                        new
+                        {
+                            Id = 5,
+                            QuestionText = "What motivates you to mentor, and what do you hope to gain or improve in yourself through mentoring this team?"
+                        });
+                });
+
+            modelBuilder.Entity("api.Models.Mentors.AiSummary", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("GeneratedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("LobbyId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SummaryText")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LobbyId")
+                        .IsUnique();
+
+                    b.ToTable("AiSummaries");
+                });
+
+            modelBuilder.Entity("api.Models.Mentors.MentorReview", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Feedback")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("LobbyId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MentorId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LobbyId")
+                        .IsUnique();
+
+                    b.HasIndex("MentorId");
+
+                    b.ToTable("MentorReviews");
                 });
 
             modelBuilder.Entity("api.Models.ProgrammingLanguage", b =>
@@ -371,14 +590,6 @@ namespace api.Migrations
                             Description = "",
                             IsCompleted = false,
                             Name = "Visit github repository"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Category = 0,
-                            Description = "",
-                            IsCompleted = false,
-                            Name = "Start coding"
                         });
                 });
 
@@ -574,6 +785,15 @@ namespace api.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("api.Models.Lobby", b =>
+                {
+                    b.HasOne("api.Models.Mentor.Mentor", "Mentor")
+                        .WithMany("Lobbys")
+                        .HasForeignKey("MentorId");
+
+                    b.Navigation("Mentor");
+                });
+
             modelBuilder.Entity("api.Models.LobbyMember", b =>
                 {
                     b.HasOne("api.Models.Lobby", "Lobby")
@@ -638,6 +858,95 @@ namespace api.Migrations
                     b.Navigation("MeetingProposal");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("api.Models.Mentor.Mentor", b =>
+                {
+                    b.HasOne("api.Models.Mentor.MentorForm", "MentorForm")
+                        .WithMany()
+                        .HasForeignKey("MentorFormId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("api.Models.User", "User")
+                        .WithOne("Mentor")
+                        .HasForeignKey("api.Models.Mentor.Mentor", "UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("MentorForm");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("api.Models.Mentor.MentorAssesmentAnswer", b =>
+                {
+                    b.HasOne("api.Models.Mentor.MentorForm", "MentorForm")
+                        .WithMany("MentorAssesmentAnswers")
+                        .HasForeignKey("MentorFormId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("api.Models.Mentor.MentorQuestion", "MentorQuestion")
+                        .WithMany("MentorAssesmentAnswers")
+                        .HasForeignKey("MentorQuestionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("MentorForm");
+
+                    b.Navigation("MentorQuestion");
+                });
+
+            modelBuilder.Entity("api.Models.Mentor.MentorForm", b =>
+                {
+                    b.HasOne("api.Models.User", "User")
+                        .WithMany("MentorForms")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("api.Models.Mentor.MentorPortfolioLink", b =>
+                {
+                    b.HasOne("api.Models.Mentor.MentorForm", "MentorForm")
+                        .WithMany("MentorPortfolioLinks")
+                        .HasForeignKey("MentorFormId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MentorForm");
+                });
+
+            modelBuilder.Entity("api.Models.Mentors.AiSummary", b =>
+                {
+                    b.HasOne("api.Models.Lobby", "Lobby")
+                        .WithOne("AiSummary")
+                        .HasForeignKey("api.Models.Mentors.AiSummary", "LobbyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lobby");
+                });
+
+            modelBuilder.Entity("api.Models.Mentors.MentorReview", b =>
+                {
+                    b.HasOne("api.Models.Lobby", "Lobby")
+                        .WithOne("Review")
+                        .HasForeignKey("api.Models.Mentors.MentorReview", "LobbyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("api.Models.Mentor.Mentor", "Mentor")
+                        .WithMany("MentorReviews")
+                        .HasForeignKey("MentorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lobby");
+
+                    b.Navigation("Mentor");
                 });
 
             modelBuilder.Entity("api.Models.ProgrammingLanguage", b =>
@@ -769,6 +1078,12 @@ namespace api.Migrations
 
             modelBuilder.Entity("api.Models.Lobby", b =>
                 {
+                    b.Navigation("AiSummary")
+                        .IsRequired();
+
+                    b.Navigation("Review")
+                        .IsRequired();
+
                     b.Navigation("TeamTaskProgress")
                         .IsRequired();
                 });
@@ -788,6 +1103,25 @@ namespace api.Migrations
                         .IsRequired();
 
                     b.Navigation("Votes");
+                });
+
+            modelBuilder.Entity("api.Models.Mentor.Mentor", b =>
+                {
+                    b.Navigation("Lobbys");
+
+                    b.Navigation("MentorReviews");
+                });
+
+            modelBuilder.Entity("api.Models.Mentor.MentorForm", b =>
+                {
+                    b.Navigation("MentorAssesmentAnswers");
+
+                    b.Navigation("MentorPortfolioLinks");
+                });
+
+            modelBuilder.Entity("api.Models.Mentor.MentorQuestion", b =>
+                {
+                    b.Navigation("MentorAssesmentAnswers");
                 });
 
             modelBuilder.Entity("api.Models.ProgrammingLanguage", b =>
@@ -815,6 +1149,11 @@ namespace api.Migrations
             modelBuilder.Entity("api.Models.User", b =>
                 {
                     b.Navigation("LobbbyQueues");
+
+                    b.Navigation("Mentor")
+                        .IsRequired();
+
+                    b.Navigation("MentorForms");
 
                     b.Navigation("UserSelections");
                 });

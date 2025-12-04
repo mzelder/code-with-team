@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { getLobbyStatus } from '../../apiClient/matchmaking/matchmaking';
-import type { LobbyStatusDto } from '../../apiClient/matchmaking/dtos';
 import TeamSelectionView from './TeamSelectionView';
 import LobbyComponent from '../lobby/LobbyComponent';
 
@@ -13,7 +12,6 @@ type MatchmakingState = typeof MatchmakingState[keyof typeof MatchmakingState];
 
 function MatchmakingContainer() {
     const [matchmakingState, setMatchmakingState] = useState<MatchmakingState>(MatchmakingState.Canceled);
-    const [lobbyData, setLobbyData] = useState<LobbyStatusDto | null>(null);
 
     // this will be happening till lobby will create
     const checkLobbyStatus = async () => {
@@ -22,16 +20,13 @@ function MatchmakingContainer() {
 
             if (!lobbyStatus.found || !lobbyStatus.repositoryUrl) {
                 setMatchmakingState(MatchmakingState.Canceled);
-                setLobbyData(null);
                 return;
             }
             
             setMatchmakingState(MatchmakingState.FoundLobby)
-            setLobbyData(lobbyStatus);
         } catch (error) {
             console.log("Error while polling:", error);
             setMatchmakingState(MatchmakingState.Canceled);
-            setLobbyData(null);
         }
     }
 
@@ -50,8 +45,7 @@ function MatchmakingContainer() {
             case MatchmakingState.Canceled:
                 return <TeamSelectionView onQueueStateChange={handleQueueStateChange} />
             case MatchmakingState.FoundLobby:
-                return <LobbyComponent lobbyData={lobbyData} />
-            
+                return <LobbyComponent />
         }
     }
 

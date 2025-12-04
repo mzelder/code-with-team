@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.Graph.Models;
 
 
 namespace api.Services
@@ -147,6 +148,11 @@ namespace api.Services
                 .Where(lm => lm.LobbyId == lobbyId.Value)
                 .ToListAsync(ct);
 
+            var aiSummary = await _context.Lobbies
+                .Where(l => l.Id == lobbyId)
+                .Select(l => l.AiSummary)
+                .FirstOrDefaultAsync(ct);
+
             return new LobbyStatusDto
             {
                 Found = true,
@@ -155,9 +161,12 @@ namespace api.Services
                 {
                     Name = m.User.Username,
                     Category = m.UserSelection.Category.Name,
-                    Role = m.UserSelection.Role.Name
+                    Role = m.UserSelection.Role.Name,
+                    Finished = m.Finished
                 }).ToList(),
-                RepositoryUrl = lobby?.RepositoryUrl
+                RepositoryUrl = lobby?.RepositoryUrl,
+                Status = lobby.Status,
+                AiSummary = aiSummary?.SummaryText
             };
         }
 
@@ -178,6 +187,10 @@ namespace api.Services
                     .ThenInclude(us => us.Role)
                 .Include(lm => lm.User)
                 .ToListAsync(ct);
+
+            var mentor = await _context.Mentors
+                .OrderBy(m => EF.Functions.Random())
+                .FirstOrDefaultAsync(ct);
 
             if (usersInQueue.Count == 0) return;
 
@@ -200,8 +213,9 @@ namespace api.Services
                     // create lobby
                     var lobby = new Lobby
                     {
-                        Status = "Active",
+                        Status = LobbyStatus.SchedulingMeeting,
                         CreatedAt = DateTime.Now,
+                        MentorId = mentor?.Id
                     };
                     _context.Lobbies.Add(lobby);
 
@@ -253,5 +267,68 @@ namespace api.Services
                 }
             }
         }
+
+        public async Task UpdateLobbiesStatusAsync(CancellationToken ct = default)
+        {
+            var lobbies = await _context.Lobbies
+                .Where(l => l.Status != LobbyStatus.Finished)
+                .ToListAsync(ct);
+
+            var schedulingLobbies = lobbies
+                .Where(l => l.Status == LobbyStatus.SchedulingMeeting)
+                .ToList();
+
+            var workingLobbies = lobbies
+                .Where(l => l.Status == LobbyStatus.Working)
+                .ToList();
+
+            if (schedulingLobbies.Count > 0)
+            {
+                await UpdateSchedulingLobbiesAsync(schedulingLobbies, ct);
+            }
+
+            if (workingLobbies.Count > 0)
+            {
+                await UpdateWorkingLobbiesAsync(workingLobbies, ct);
+            }
+        }
+
+        private async Task UpdateSchedulingLobbiesAsync(List<Lobby> lobbies,
+            CancellationToken ct)
+        {
+            foreach (var lobby in lobbies)
+            {
+                var allMembersAttended = await _context.LobbyMembers
+                    .Include(lm => lm.UserTaskProgress)
+                        .ThenInclude(utp => utp.UserTasks)
+                    .Where(lm => lm.LobbyId == lobby.Id)
+                    .AllAsync(lm => lm.UserTaskProgress.UserTasks
+                        .Any(ut => ut.Name == "Attend your scheduled team meeting" && ut.IsCompleted), ct);
+
+                if (allMembersAttended)
+                {
+                    lobby.Status = LobbyStatus.Working;
+                    await _context.SaveChangesAsync(ct);
+                }
+            }
+        }
+
+        private async Task UpdateWorkingLobbiesAsync(List<Lobby> lobbies,
+            CancellationToken ct)
+        {
+            foreach (var lobby in lobbies)
+            {
+                var allMembersFinished = await _context.LobbyMembers
+                    .Where(lm => lm.LobbyId == lobby.Id)
+                    .AllAsync(lm => lm.Finished, ct);
+
+                if (allMembersFinished)
+                {
+                    lobby.Status = LobbyStatus.Finished;
+                    await _context.SaveChangesAsync(ct);
+                }
+            }
+        }
+
     }
 }

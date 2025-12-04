@@ -1,5 +1,5 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using api.Models.Mentor;
 
 namespace api.Models
 {
@@ -19,5 +19,7 @@ namespace api.Models
 
         public ICollection<UserSelection> UserSelections { get; set; }
         public ICollection<LobbyMember> LobbbyQueues { get; set; }
+        public ICollection<MentorForm> MentorForms { get; set; }
+        public Mentor.Mentor Mentor { get; set; }
     }
 }

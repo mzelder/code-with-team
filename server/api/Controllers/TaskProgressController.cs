@@ -38,7 +38,7 @@ namespace api.Controllers
                 tasks.AddRange(teamTasks.Select(tt => new TaskProgressDto(tt)));
 
                 return tasks;
-            } 
+            }
             catch (InvalidOperationException ex)
             {
                 return BadRequest(new ApiResponseDto(false, ex.Message));
@@ -51,6 +51,20 @@ namespace api.Controllers
             try
             {
                 await _taskProgressService.UpdateAttendInMeetingAsync(GetCurrentUserId());
+                return Ok(new ApiResponseDto(true, "User task updated successfully."));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new ApiResponseDto(false, ex.Message));
+            }
+        }
+
+        [HttpPost("finish-work")]
+        public async Task<ActionResult<ApiResponseDto>> UpdateFinishWork()
+        {
+            try
+            {
+                await _taskProgressService.UpdateFinishAsync(GetCurrentUserId());
                 return Ok(new ApiResponseDto(true, "User task updated successfully."));
             }
             catch (InvalidOperationException ex)

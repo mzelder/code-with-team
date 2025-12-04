@@ -1,3 +1,5 @@
+import type { LobbyStatus } from "../../components/mentor/MentorContainer";
+
 export interface CategoryResponseDto {
     id: number;
     name: string;
@@ -36,6 +38,7 @@ export interface LobbyMemberDto {
     name: string;
     category: string;
     role: string;
+    finished: boolean;
 }
 
 export interface LobbyStatusDto {
@@ -43,4 +46,6 @@ export interface LobbyStatusDto {
     lobbyId: number;
     members: LobbyMemberDto[];
     repositoryUrl: string;
+    status?: LobbyStatus;
+    aiSummary?: string
 }

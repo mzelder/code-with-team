@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Octokit;
 using Octokit.Internal;
 
-namespace api.Controllers
+namespace api.Controllers.OnlyDev
 {
     [Route("api/[controller]")]
     [ApiController]

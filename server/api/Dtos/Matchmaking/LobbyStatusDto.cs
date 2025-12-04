@@ -1,4 +1,6 @@
-﻿namespace api.Dtos.Matchmaking
+﻿using api.Models;
+
+namespace api.Dtos.Matchmaking
 {
     public class LobbyStatusDto
     {
@@ -6,5 +8,7 @@
         public int? LobbyId { get; set; }
         public List<LobbyMemberDto>? Members { get; set; }
         public string? RepositoryUrl { get; set; }
+        public LobbyStatus? Status { get; set; }
+        public string? AiSummary { get; set; }
     }
 }
