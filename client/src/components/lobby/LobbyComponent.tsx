@@ -9,7 +9,7 @@ import remarkGfm from "remark-gfm";
 import type { TaskProgressDto } from "../../apiClient/tasks/dtos";
 import type { LobbyStatusDto } from "../../apiClient/matchmaking/dtos";
 import ChatContainer from "../chat/ChatContainer";
-import { finishWork, getTaskProgress, updateAttendInMeetingTask } from "../../apiClient/tasks/tasks";
+import { finishWork, getTaskProgress, updateUserTask } from "../../apiClient/tasks/tasks";
 import useCurrentUser from "../../hooks/useCurrentUser";
 import { getMeetingLink, getScheduledMeetingDate } from "../../apiClient/meeting/meeting";
 import TeamCallButton from "../meeting/TeamCallButton";
@@ -17,18 +17,16 @@ import { isMeetingLinkAccessible } from "../../apiClient/matchmaking/validators"
 import { getMentorReview } from "../../apiClient/mentor/mentor";
 import FinishButton from "./FinishButton";
 import FeedbackPanel from "./FeedbackPanel";
+import { getLobbyStatus } from "../../apiClient/matchmaking/matchmaking";
 
-enum TaskNames {
+export enum TaskNames {
     finished = "Press finish button when you think project is finished",
     meeting = "Attend your scheduled team meeting",
     visitRepo = "Visit github repository"
 }
 
-interface LobbyComponentProps {
-    lobbyData: LobbyStatusDto | null;
-}
-
-function LobbyComponent({ lobbyData }: LobbyComponentProps) {
+function LobbyComponent() {
+    const [lobbyData, setLobbyData] = useState<LobbyStatusDto | null>(null); 
     const [repoUrl, setRepoUrl] = useState<string | null>(null);
     const [tasks, setTasks] = useState<TaskProgressDto[] | null>(null);
     
@@ -46,13 +44,22 @@ function LobbyComponent({ lobbyData }: LobbyComponentProps) {
     const currentUser = useCurrentUser();
 
     useEffect(() => {
+        fetchAll();
+    }, []);
+    
+    useEffect(() => {
+        const interval = setInterval(() => {
+            fetchAll();
+        }, 30_000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    useEffect(() => {
         if (!lobbyData || !currentUser) return;
         const member = lobbyData.members.find(m => m.name === currentUser);
         const finished = member ? member.finished : false;
         setIsFinished(finished);
-
-        fetchAll();
-        setRepoUrl(lobbyData?.repositoryUrl ?? null);
     }, [lobbyData, currentUser]);
 
     useEffect(() => {
@@ -78,7 +85,13 @@ function LobbyComponent({ lobbyData }: LobbyComponentProps) {
         return () => clearInterval(interval);
     }, [meetingStartAt, meetingLink]);
 
+    
+
     const fetchAll = async() => { 
+        const lobbyData = await getLobbyStatus();
+        setLobbyData(lobbyData); 
+        setRepoUrl(lobbyData?.repositoryUrl ?? null);
+        
         const fetchedTasks = await getTaskProgress();
         setTasks(fetchedTasks);
 
@@ -92,25 +105,25 @@ function LobbyComponent({ lobbyData }: LobbyComponentProps) {
     const fetchMeetingLink = async() => {
         const fetchedLink = await getMeetingLink();
         setMeetingLink(fetchedLink.meetingLink);
+    
     }
-
-    const fetchUpdateTeamTask = async() => {
-        const response = await updateAttendInMeetingTask();
+    const updateTask = async(task: TaskNames) => {
+        const response = await updateUserTask(task);
         if (response.success) {
-            updateTaskCompletion(TaskNames.meeting);
+            updateTaskCompletion(task);
         }
-    };
+    }
 
     const onClickRepositoryButton = () => {
         if (repoUrl) {
-            updateTaskCompletion(TaskNames.visitRepo);
+            updateTask(TaskNames.visitRepo);
             window.open(repoUrl, "_blank", "noopener,noreferrer");
         }
     };
 
     const onClickTeamCallButton = () => {
         if (meetingLink) {
-            fetchUpdateTeamTask();
+            updateTask(TaskNames.meeting);
             window.open(meetingLink, "_blank", "noopener,noreferrer");
         }
     };

@@ -3,7 +3,7 @@ import Button from "../shared/Button";
 import UserAvatar from "../shared/UserAvatar";
 import type { LobbyStatusDto } from "../../apiClient/matchmaking/dtos";
 import { getMentorTeams, submitMentorReview } from "../../apiClient/mentor/mentor";
-import toast from "react-hot-toast/headless";
+import { toast } from "react-hot-toast";
 import ReviewPanel from "./ReviewPanel";
 
 export enum LobbyStatus {
@@ -44,16 +44,25 @@ function MentorContainer() {
     const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
 
     useEffect(() => {
-        const fetchMentorTeams = async () => {
-            try {
-                const result = await getMentorTeams();
-                setMentorTeams(result);
-            } catch (error) {
-                toast.error("Can't get mentor teams");
-            }
-        };
         fetchMentorTeams();
     }, []);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            fetchMentorTeams();
+        }, 30_000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    const fetchMentorTeams = async () => {
+        try {
+            const result = await getMentorTeams();
+            setMentorTeams(result);
+        } catch (error) {
+            toast.error("Can't get mentor teams");
+        }
+    };
 
     const sendFeedback = async(feedback: string) => {
         if (selectedTeamId == null) {

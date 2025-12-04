@@ -26,6 +26,7 @@ namespace api.Services.Hosted
                     using var scope = _serviceProvider.CreateScope();
                     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                     var teams = scope.ServiceProvider.GetRequiredService<ITeamsMeetingService>();
+                    var taskService = scope.ServiceProvider.GetRequiredService<ITaskProgressService>();
 
                     var proposals = await db.MeetingProposals
                         .Where(p => p.Status == MeetingProposalStatus.Accepted && p.Meeting == null)
@@ -46,6 +47,8 @@ namespace api.Services.Hosted
                                 MeetingProposalId = p.Id,
                                 TeamsMeetingLink = link
                             });
+
+                            await taskService.UpdateTeamTaskAsync(p.LobbyId, "Book meeting");
 
                             await db.SaveChangesAsync(stoppingToken);
                         }
