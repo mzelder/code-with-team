@@ -7,7 +7,7 @@ namespace api.Services.Hosted
     public class MatchmakingBackgroundService : BackgroundService
     {
         private readonly IServiceProvider _serviceProvider;
-        private const int IntervalMs = 2000;
+        private const int IntervalMs = 60_000;
 
         public MatchmakingBackgroundService(IServiceProvider serviceProvider)
         {
@@ -24,6 +24,7 @@ namespace api.Services.Hosted
                     var matchmakingService = scope.ServiceProvider.GetRequiredService<IMatchmakingService>();
                     var teamRepositoryService = scope.ServiceProvider.GetRequiredService<ITeamRepositoryService>();
 
+                    await matchmakingService.UpdateLobbiesStatusAsync(stoppingToken);
                     await matchmakingService.FormLobbiesAsync(stoppingToken);
 
                     var lobbyWithoutUrl = await matchmakingService.GetFirstLobbyWithoutRepositoryUrl(stoppingToken);

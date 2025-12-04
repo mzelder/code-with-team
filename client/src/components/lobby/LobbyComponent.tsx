@@ -20,7 +20,8 @@ import FeedbackPanel from "./FeedbackPanel";
 
 enum TaskNames {
     finished = "Press finish button when you think project is finished",
-    meeting = "Attend your scheduled team meeting"
+    meeting = "Attend your scheduled team meeting",
+    visitRepo = "Visit github repository"
 }
 
 interface LobbyComponentProps {
@@ -102,6 +103,7 @@ function LobbyComponent({ lobbyData }: LobbyComponentProps) {
 
     const onClickRepositoryButton = () => {
         if (repoUrl) {
+            updateTaskCompletion(TaskNames.visitRepo);
             window.open(repoUrl, "_blank", "noopener,noreferrer");
         }
     };

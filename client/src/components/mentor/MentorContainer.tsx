@@ -87,7 +87,6 @@ function MentorContainer() {
                             <th className="p-3 text-left">Team</th>
                             <th className="p-3 text-left">Status</th>
                             <th className="p-3 text-left">Repo</th>
-                            <th className="p-3 text-left">Lobby</th>
                             <th className="p-3 text-left">Review</th>
                         </tr>
                     </thead>
@@ -122,14 +121,6 @@ function MentorContainer() {
                                         ) : (
                                             <span className="text-gray-500">No repo</span>
                                         )}
-                                    </td>
-                                    <td className="p-3">
-                                        <Button
-                                            text="Open Lobby"
-                                            onToggle={() => (window.location.href = `/lobby/${team.lobbyId}`)}
-                                            defaultBorderColor="white"
-                                            defaultTextColor="white"
-                                        />
                                     </td>
                                     <td className="p-3">
                                         <Button

@@ -13,5 +13,6 @@ namespace api.Services.Interfaces
         Task<LobbyStatusDto> GetLobbyStatusAsync(int userId, CancellationToken ct = default);
         Task<Lobby> GetFirstLobbyWithoutRepositoryUrl(CancellationToken ct = default);
         Task FormLobbiesAsync(CancellationToken ct = default);
+        Task UpdateLobbiesStatusAsync(CancellationToken ct = default);
     }
 }
